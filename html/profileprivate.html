@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Profile — QUEENDOM</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --accent1:#7fb8ff; --accent2:#c995ff; }
+  body{
+    margin:0;
+    font-family:"Nunito",Arial, sans-serif;
+    background: linear-gradient(140deg,#eef5ff 0%,#dce8ff 40%,#e6ddf3 70%,#ffd8f1 100%);
+    min-height:100vh;
+    color:#123;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:48px;
+    box-sizing:border-box;
+  }
+
+  .card{
+    width:920px;
+    max-width:95%;
+    border-radius:20px;
+    padding:28px;
+    background:rgba(255,255,255,0.85);
+    box-shadow:0 20px 50px rgba(40,60,120,0.08);
+    display:flex;
+    gap:24px;
+    align-items:flex-start;
+  }
+
+  .profile-left{ width:260px; text-align:center; }
+
+  /* Avatar styling */
+  .avatar-wrapper {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto;
+    cursor: pointer;
+  }
+
+  .avatar-large{
+    width:140px;
+    height:140px;
+    border-radius:50%;
+    display:inline-grid;
+    place-items:center;
+    font-size:40px;
+    color:#fff;
+    background: linear-gradient(135deg,var(--accent1),var(--accent2));
+    border:6px solid rgba(255,255,255,0.85);
+    box-shadow:0 10px 28px rgba(40,70,140,0.12);
+    transition: transform .22s ease, box-shadow .22s ease;
+    overflow:hidden;
+    position:relative;
+  }
+
+  /* phồng lên khi hover */
+  .avatar-wrapper:hover .avatar-large {
+    transform: scale(1.08);
+    box-shadow: 0 20px 40px rgba(40,70,140,0.18);
+  }
+
+  /* overlay change button (appears on hover) */
+  .change-avatar-btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.32), rgba(0,0,0,0.48));
+    color: white;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 50%;
+    backdrop-filter: blur(4px);
+    transition: opacity .20s ease;
+    pointer-events: none;
+  }
+
+  .avatar-wrapper:hover .change-avatar-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* hidden native file input */
+  #hiddenAvatarFile { display:none; }
+
+  h2{ margin:12px 0 6px; font-size:22px; color:#16304f; }
+  .meta{ color:#55687f; font-size:14px; margin-bottom:12px; }
+
+  .profile-right{ flex:1; }
+  .row{ display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+  .label{ width:130px; color:#5b6b80; font-weight:700; }
+  .value{ flex:1; background:rgba(255,255,255,0.9); padding:10px 12px; border-radius:10px; box-shadow:inset 0 6px 18px rgba(0,0,0,0.05); color:#16304f; }
+
+  .actions{ margin-top:18px; display:flex; gap:12px; align-items:center; }
+  .btn{ padding:10px 14px; border-radius:12px; border:none; cursor:pointer; font-weight:800; background:linear-gradient(135deg,var(--accent1),var(--accent2)); color:white; box-shadow:0 12px 28px rgba(100,120,200,0.12); }
+  .btn-ghost{ background:transparent; border:1px solid rgba(20,30,40,0.06); color:#16304f; font-weight:700; padding:10px 12px; border-radius:12px; }
+
+  .note{ margin-top:10px; color:#6b7b8c; font-size:13px; }
+
+  @media (max-width:840px){
+    body{ padding:18px }
+    .card{ flex-direction:column; align-items:center; }
+    .profile-left{ width:100%; }
+    .label{ width:120px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hidden file input used by avatar update -->
+<input type="file" id="hiddenAvatarFile" accept="image/*" aria-hidden="true">
+
+<div class="card" id="profileCard" style="display:none">
+  <div class="profile-left">
+    <!-- Avatar wrapper with overlay button -->
+    <div class="avatar-wrapper" onclick="triggerAvatarInput()" title="Nhấn để thay đổi ảnh đại diện">
+      <div id="avatarLarge" class="avatar-large" aria-hidden="false">U</div>
+      <div class="change-avatar-btn">Chọn ảnh</div>
+    </div>
+
+    <h2 id="displayName">User</h2>
+    <div class="meta">ID: <span id="userId">—</span></div>
+
+    <div style="margin-top:16px">
+      <button class="btn" onclick="goHome()">Back to QUEENDOM</button>
+    </div>
+  </div>
+
+  <div class="profile-right">
+    <div class="row">
+      <div class="label">Email</div>
+      <div id="emailVal" class="value">—</div>
+    </div>
+
+    <div class="row">
+      <div class="label">Tên</div>
+      <div id="nameVal" class="value">—</div>
+    </div>
+
+    <div class="row">
+      <div class="label">Ngày sinh</div>
+      <div id="dobVal" class="value">—</div>
+    </div>
+
+    <div class="row">
+      <div class="label">Nơi ở</div>
+      <div id="locationVal" class="value">—</div>
+    </div>
+
+    <div class="row">
+      <div class="label">Provider</div>
+      <div id="providerVal" class="value">—</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="openSettings()">Settings</button>
+      <button class="btn-ghost" onclick="signOut()">Sign out</button>
+    </div>
+
+    <div id="settingsBox" style="display:none; margin-top:16px; padding:12px; border-radius:10px; background:rgba(245,245,250,0.8);">
+      <div style="margin-bottom:8px; font-weight:700; color:#3a4b6b">Settings</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn-ghost" onclick="changeName()">Change display name</button>
+        <button class="btn-ghost" onclick="promptChangeAvatar()">Change avatar (URL)</button>
+      </div>
+      <div class="note">Settings currently limited: you can update name/avatar here. Sign out will clear local session.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Utility localStorage helpers */
+function getLS(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
+function setLS(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+/* Init profile view */
+(function init(){
+  const logged = getLS('user_logged_in') === 'yes';
+  if(!logged){
+    alert('Bạn chưa đăng nhập. Chuyển đến Sign In.');
+    window.location.href = 'signin.html';
+    return;
+  }
+
+  // ensure user_id exists (create if not)
+  let uid = getLS('user_id');
+  if(!uid){
+    uid = 'u_' + Date.now().toString(36);
+    setLS('user_id', uid);
+  }
+
+  // read profile values
+  const email = getLS('auth_email') || getLS('username') || '—';
+  const name = getLS('profile_name') || (email && email.includes('@') ? email.split('@')[0] : 'User');
+  const dob = getLS('profile_dob') || '—';
+  const location = getLS('profile_location') || '—';
+  const provider = (getLS('auth_provider') || 'email').toUpperCase();
+
+  document.getElementById('userId').textContent = uid;
+  document.getElementById('emailVal').textContent = email;
+  document.getElementById('displayName').textContent = name;
+  document.getElementById('nameVal').textContent = name;
+  document.getElementById('dobVal').textContent = dob;
+  document.getElementById('locationVal').textContent = location;
+  document.getElementById('providerVal').textContent = provider;
+
+  // avatar
+  const avatarData = getLS('profile_avatar');
+  const avatarEl = document.getElementById('avatarLarge');
+
+  if(avatarData){
+    // put image inside avatarLarge
+    avatarEl.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = avatarData;
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    img.style.borderRadius = '50%';
+    avatarEl.appendChild(img);
+  } else {
+    // initials
+    const initials = name.trim().split(' ').filter(Boolean).map(s=>s[0]).slice(0,2).join('').toUpperCase() || 'U';
+    avatarEl.textContent = initials;
+  }
+
+  document.getElementById('profileCard').style.display = 'flex';
+})();
+
+/* Open settings panel */
+function openSettings(){
+  const box = document.getElementById('settingsBox');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+/* Change display name (prompt) */
+function changeName(){
+  const current = getLS('profile_name') || getLS('username') || '';
+  const nv = prompt('Nhập tên hiển thị mới:', current);
+  if(nv === null) return;
+  const cleaned = nv.trim();
+  if(cleaned.length === 0) return alert('Tên không hợp lệ.');
+  setLS('profile_name', cleaned);
+  // refresh page values
+  document.getElementById('displayName').textContent = cleaned;
+  document.getElementById('nameVal').textContent = cleaned;
+  alert('Đã cập nhật tên ✓');
+}
+
+/* Prompt change avatar via URL (keeps old prompt behavior) */
+function promptChangeAvatar(){
+  const cur = getLS('profile_avatar') || '';
+  const url = prompt('Dán URL ảnh (hoặc dataURL) để làm avatar. Để trống để xóa avatar:', cur);
+  if(url === null) return;
+  if(url.trim().length === 0){
+    localStorage.removeItem('profile_avatar');
+    alert('Đã xóa avatar tùy chỉnh.');
+    location.reload();
+    return;
+  }
+  setLS('profile_avatar', url.trim());
+  alert('Đã cập nhật avatar ✓');
+  location.reload();
+}
+
+/* Sign out (clear session keys) */
+function signOut(){
+  if(!confirm('Bạn có chắc muốn đăng xuất?')) return;
+  try{
+    localStorage.removeItem('user_logged_in');
+    localStorage.removeItem('username');
+    localStorage.removeItem('auth_email');
+    localStorage.removeItem('auth_provider');
+    // keep profile data if you want; currently we keep profile_name/profile_avatar
+  }catch(e){}
+  alert('Đã đăng xuất.');
+  window.location.href = 'new.html';
+}
+
+function goHome(){ window.location.href = 'new.html'; }
+
+/* ---------- Avatar: file input handling ---------- */
+function triggerAvatarInput(){
+  const f = document.getElementById('hiddenAvatarFile');
+  if(f) f.click();
+}
+
+/* When user selects a local file, convert to dataURL, preview and save to localStorage */
+function updateAvatarFromFileInput(evt){
+  const input = evt.target || evt;
+  const file = input.files ? input.files[0] : null;
+  if (!file) return;
+  // only images accepted by accept attribute; still check type
+  if(!file.type.startsWith('image/')) {
+    alert('Vui lòng chọn file ảnh.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataURL = e.target.result;
+    // display in avatarLarge
+    const avatarEl = document.getElementById('avatarLarge');
+    avatarEl.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = dataURL;
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    img.style.borderRadius = '50%';
+    avatarEl.appendChild(img);
+
+    // save to localStorage
+    try {
+      localStorage.setItem('profile_avatar', dataURL);
+    } catch(e){
+      console.warn('Cannot save avatar to localStorage:', e);
+      alert('Không thể lưu ảnh (kích thước quá lớn). Hãy thử ảnh nhỏ hơn hoặc dùng URL trong Settings.');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+/* attach file input listener */
+document.getElementById("hiddenAvatarFile").addEventListener("change", updateAvatarFromFileInput);
+
+</script>
+</body>
+</html>

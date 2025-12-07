@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<title>Học - QUEENDOM</title>
+<style>
+ body{font-family:Arial;background:linear-gradient(#240020,#3b0b40);color:#fff;padding:36px}
+ h1{margin-top:0}
+ .levels{display:flex;gap:12px;margin-bottom:18px}
+ .level{padding:10px 14px;border-radius:8px;background:#7f3bff;cursor:pointer}
+ .level.active{box-shadow:0 6px 0 rgba(0,0,0,0.3);transform:translateY(-2px)}
+ .list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+ .card{background:rgba(255,255,255,0.04);padding:12px;border-radius:10px}
+ button.play{background:#fff;color:#333;padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+ .known{background:#0f0a2a;color:#9fff9f;padding:6px 8px;border-radius:6px}
+</style>
+</head>
+<body>
+  <h1>Chế độ Học</h1>
+  <div class="levels">
+    <div class="level active" data-level="easy">Dễ</div>
+    <div class="level" data-level="medium">Trung bình</div>
+    <div class="level" data-level="hard">Khó</div>
+  </div>
+
+  <div id="wordList" class="list"></div>
+
+  <video id="player" width="480" controls style="display:block;margin-top:18px"></video>
+
+<script>
+/* Dữ liệu ví dụ: từ -> file mp4 (điền tên đúng file của bạn) */
+const dictionary = {
+  "tôi": "toi.mp4",
+  "không": "khong.mp4",
+  "biết": "biet.mp4",
+  "bạn": "ban.mp4",
+  "đang": "dang.mp4",
+  "nói": "noi.mp4",
+  "gì": "gi.mp4",
+  "hiểu": "hieu.mp4",
+  "yêu": "yeu.mp4",
+  "anh": "anh.mp4",
+  "em": "em.mp4"
+};
+
+/* Các level: mảng từ */
+const levels = {
+  easy: ["tôi","bạn","anh","em","yêu"],
+  medium: ["đang","nói","gì","hiểu"],
+  hard: ["không","biết"]
+};
+
+/* Lưu progress */
+const STORAGE_KEY = 'queendom_learn_known';
+const known = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+const player = document.getElementById('player');
+const wordList = document.getElementById('wordList');
+
+function showLevel(level){
+  wordList.innerHTML = '';
+  levels[level].forEach(w => {
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.innerHTML = `<strong>${w}</strong><div style="margin-top:8px">
+      <button class="play">▶️ Phát</button>
+      <button class="toggle">${ known.includes(w) ? 'Đã biết' : 'Đánh dấu' }</button>
+      </div>`;
+    // play
+    c.querySelector('.play').addEventListener('click', ()=> {
+      const f = dictionary[w];
+      if (f) {
+        player.src = f;
+        player.play().catch(e=>console.warn(e));
+      } else {
+        alert('Chưa có video cho từ: ' + w);
+      }
+    });
+    // toggle known
+    c.querySelector('.toggle').addEventListener('click', (ev)=> {
+      if (!known.includes(w)) known.push(w);
+      else { const i = known.indexOf(w); known.splice(i,1); }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(known));
+      ev.target.textContent = known.includes(w) ? 'Đã biết' : 'Đánh dấu';
+    });
+
+    if (known.includes(w)){
+      const k = document.createElement('div'); k.className='known'; k.textContent='Đã biết';
+      c.appendChild(k);
+    }
+    wordList.appendChild(c);
+  });
+}
+
+/* level button */
+document.querySelectorAll('.level').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    document.querySelectorAll('.level').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    showLevel(el.dataset.level);
+  });
+});
+
+// init
+showLevel('easy');
+</script>
+</body>
+</html>

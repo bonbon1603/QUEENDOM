@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>QUEENDOM</title>
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        background: linear-gradient(135deg, black, purple);
+        color: white;
+        font-family: Arial;
+        padding: 40px;
+    }
+
+    iframe {
+        width: 0;
+        height: 0;
+        border: none;
+        position: absolute;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>HELLO QUEENDOM</h1>
+<p>Nhạc nền random mỗi lần vào trang.</p>
+
+<script>
+// Danh sách ID YouTube
+let songs = [
+    "aKbneHXNW8A", // Bài bạn gửi
+    "qIM56IoaL34", // ví dụ
+    "C-u5WLJ9Yk4"  // ví dụ
+];
+
+// Random một bài bất kỳ
+let pick = songs[Math.floor(Math.random() * songs.length)];
+
+// Tạo iframe autoplay
+document.write(`
+<iframe 
+    src="https://www.youtube.com/embed/${pick}?autoplay=1&loop=1&playlist=${pick}"
+    allow="autoplay">
+</iframe>
+`);
+</script>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Music Player</title>
+<style>
+    body {
+        background: radial-gradient(circle, #2a0033, #000000);
+        color: white;
+        font-family: Arial;
+        text-align: center;
+        padding-top: 100px;
+    }
+    #playerBox {
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+        backdrop-filter: blur(6px);
+    }
+    button {
+        padding: 10px 20px;
+        background: #a020f0;
+        border: none;
+        border-radius: 10px;
+        color: white;
+        cursor: pointer;
+        font-size: 18px;
+    }
+    button:hover {
+        background: #c738ff;
+    }
+</style>
+</head>
+<body>
+
+<h1>Music Player</h1>
+
+<button onclick="startMusic()">▶ Play Music</button>
+
+<div id="playerBox">
+    <p id="songName">...</p>
+    <audio id="audio" controls></audio>
+</div>
+
+<script>
+    // Danh sách bài nhạc
+    const playlist = [
+        "C:\Users\ACER\Downloads\The Way I Still Love You - Reynard Silva (Lyrics  Vietsub).mp3",
+        "song2.mp3",
+        "song3.mp3"
+    ];
+
+    const audio = document.getElementById("audio");
+    const songName = document.getElementById("songName");
+
+    function startMusic() {
+        playRandom();
+    }
+
+    function playRandom() {
+        let randomIndex = Math.floor(Math.random() * playlist.length);
+        audio.src = playlist[randomIndex];
+        songName.textContent = "Now playing: " + playlist[randomIndex];
+        audio.play();
+    }
+
+    // Tự chạy bài tiếp theo khi hết bài
+    audio.onended = playRandom;
+</script>
+
+</body>
+</html>
+
+</body>
+</html>
+

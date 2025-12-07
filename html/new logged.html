@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>QUEENDOM — Logged</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-a:#ffffff;
+    --bg-b:#ffd7f8;
+    --accent1:#7fb8ff;
+    --accent2:#c995ff;
+  }
+
+  /* page base (copied + cleaned from your original) */
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family: "Nunito", Arial, sans-serif;
+    background: linear-gradient(140deg, #ffffff 0%, #dff2ff 18%, #b6e4ff 35%, #9cd0ff 52%, #c8c9ff 70%, #ffd7f8 90%);
+    color: #fff;
+    padding: 60px;
+    box-sizing: border-box;
+  }
+
+  .page { max-width:1200px; margin:0 auto; padding:48px 60px; position:relative; }
+
+  .hero {
+    min-height:80vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    text-align:center;
+    padding-top:20px;
+    padding-bottom:40px;
+  }
+  .hero h1{
+    font-family: 'French Script MT', cursive;
+    font-size:150px;
+    margin:0;
+    line-height:0.9;
+    color:#fff;
+    text-shadow: 0 10px 28px rgba(0,0,0,0.25);
+  }
+
+  /* top-right user widget */
+  .user-widget {
+    position: fixed;
+    right: 28px;
+    top: 18px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    padding:12px 18px;
+    background: rgba(255,255,255,0.16);
+    backdrop-filter: blur(8px);
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 8px 24px rgba(60,80,120,0.08);
+    cursor:pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+    z-index:2000;
+  }
+  .user-widget:hover{ transform: translateY(-4px); box-shadow:0 18px 40px rgba(60,90,140,0.12); }
+
+  .user-greet { color:#fff; font-weight:800; font-size:20px; margin-right:8px; text-shadow:0 2px 8px rgba(0,0,0,0.18); }
+  .user-avatar {
+    width:48px; height:48px; border-radius:50%;
+    display:grid; place-items:center; color:white; font-weight:700;
+    background: linear-gradient(135deg,var(--accent1),var(--accent2));
+    box-shadow: 0 6px 18px rgba(0,0,0,0.14);
+    border: 3px solid rgba(255,255,255,0.7);
+    flex-shrink:0;
+  }
+
+  /* container with call-to-actions (kept from original) */
+  .container { margin-top:18px; text-align:center; position:relative; padding:36px 20px; }
+  .title{ font-size:54px; font-weight:800; margin:10px 0 6px; line-height:1.05; letter-spacing:0.4px; color:#123; }
+  .subtitle{ margin:0 0 18px; color:#345; font-size:18px; }
+
+  .btn {
+    display: inline-block;
+    text-decoration: none;
+    padding: 20px 40px;
+    margin: 14px;
+    font-size:28px;
+    font-weight:800;
+    border-radius:18px;
+    color: #ffffff;
+    background: linear-gradient(180deg, #e8f3ff 0%, #d3e5ff 40%, #f7d9ff 100%);
+    border:2px solid rgba(255,255,255,0.6);
+    box-shadow: 0 18px 48px rgba(150,170,255,0.28);
+  }
+
+  footer{ margin-top:28px; color:#fff; font-size:14px; opacity:0.95; }
+
+  /* small responsive tweaks */
+  @media (max-width:860px){
+    .hero h1{ font-size:110px }
+    .user-widget{ right:10px; top:10px; padding:10px 14px; }
+    .user-avatar{ width:40px;height:40px }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <!-- click avatar / greeting to open profile -->
+  <div id="userWidget" class="user-widget" title="Open profile" style="display:none" role="button" tabindex="0">
+    <div class="user-greet" id="userGreet">Hello, User</div>
+    <div id="userAvatar" class="user-avatar">U</div>
+  </div>
+
+  <div class="hero">
+    <h1>QUEENDOM</h1>
+  </div>
+
+  <div class="container">
+    <h2 class="title">Sign Language</h2>
+    <p class="subtitle">Choose an option</p>
+
+    <div class="menu">
+      <a class="btn" href="learn.html">Learn</a>
+      <a class="btn" href="translate.html">Translate</a>
+    </div>
+  </div>
+
+  <footer>wish u all the best.</footer>
+</div>
+
+<!-- fab omitted for brevity (you can keep original if wanted) -->
+
+<script>
+/* show user widget if logged in; click => profile.html */
+(function initUserWidget(){
+  function getLS(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+
+  const logged = getLS('user_logged_in') === 'yes';
+  const widget = document.getElementById('userWidget');
+  const greet = document.getElementById('userGreet');
+  const avatar = document.getElementById('userAvatar');
+
+  if(!logged){
+    // user not logged: hide widget (or optionally show Sign In link)
+    widget.style.display = 'none';
+    return;
+  }
+
+  // prepare display values
+  const storedName = getLS('profile_name') || getLS('username') || 'User';
+  const provider = (getLS('auth_provider') || 'email').toUpperCase();
+  const shownName = storedName.length > 18 ? storedName.slice(0,16) + '…' : storedName;
+
+  greet.textContent = 'Hello, ' + shownName;
+
+  // avatar: if user stored a dataURL image under profile_avatar use it; else initials
+  const avatarData = getLS('profile_avatar');
+  if(avatarData){
+    avatar.style.background = '';
+    avatar.innerHTML = '';
+    // create img
+    const img = document.createElement('img');
+    img.src = avatarData;
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    img.style.borderRadius = '50%';
+    avatar.appendChild(img);
+  } else {
+    // initials
+    const initials = storedName.trim().split(' ').filter(Boolean).map(s=>s[0]).slice(0,2).join('').toUpperCase() || 'U';
+    avatar.textContent = initials;
+  }
+
+  widget.style.display = 'flex';
+
+  // click -> open profile page
+  widget.addEventListener('click', ()=> location.href = 'profile.html' );
+  widget.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') location.href = 'profile.html' });
+})();
+</script>
+
+</body>
+</html>
+

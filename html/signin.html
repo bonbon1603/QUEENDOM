@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Sign In</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;700;800&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:"Nunito", Arial, sans-serif;
+
+    background:linear-gradient(140deg,#fff,#d8fff6,#ffd6f9);
+    -webkit-font-smoothing:antialiased;
+}
+
+.card{
+    width:420px;
+    padding:36px;
+    border-radius:28px;
+    background:rgba(255,255,255,0.65);
+    backdrop-filter:blur(14px);
+    box-shadow:0 20px 45px rgba(0,0,0,0.15);
+    animation: pop .5s ease;
+}
+
+@keyframes pop{
+    0%{ transform:scale(.9); opacity:0 }
+    100%{ transform:scale(1); opacity:1 }
+}
+
+h1{
+    margin:0 0 18px;
+    font-size:36px;
+    font-weight:800;
+    text-align:center;
+    color:#1a2a45;
+}
+
+.info-box{
+    background:rgba(255,255,255,0.75);
+    padding:14px 18px;
+    border-radius:16px;
+    margin-top:10px;
+    font-size:16px;
+    line-height:1.5;
+    box-shadow:inset 0 5px 12px rgba(0,0,0,0.06);
+}
+
+.label{
+    font-size:14px;
+    opacity:0.7;
+}
+
+.btn{
+    width:100%;
+    margin-top:22px;
+    padding:14px;
+    border:none;
+    border-radius:16px;
+    background:linear-gradient(135deg,#7fb8ff,#c995ff);
+    color:white;
+    font-size:18px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 12px 22px rgba(100,120,200,0.22);
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>Sign In</h1>
+
+    <div class="info-box">
+        <div class="label">Phương thức đăng nhập:</div>
+        <div id="provider"></div>
+    </div>
+
+    <div class="info-box">
+        <div class="label">Email:</div>
+        <div id="email">—</div>
+    </div>
+
+    <div class="info-box">
+        <div class="label">Tên:</div>
+        <div id="name"></div>
+    </div>
+
+    <div class="info-box">
+        <div class="label">Ngày sinh:</div>
+        <div id="dob"></div>
+    </div>
+
+    <div class="info-box">
+        <div class="label">Nơi ở:</div>
+        <div id="location"></div>
+    </div>
+
+    <button class="btn" onclick="finishSignup()">Complete the sign-in</button>
+</div>
+
+
+<script>
+function loadData(){
+    const provider = localStorage.getItem("auth_provider") || "email";
+    const email = localStorage.getItem("auth_email") || "Không có (Facebook / Zalo)";
+    const name = localStorage.getItem("profile_name") || "—";
+    const dob = localStorage.getItem("profile_dob") || "—";
+    const location = localStorage.getItem("profile_location") || "—";
+
+    document.getElementById("provider").innerText = provider.toUpperCase();
+    document.getElementById("email").innerText = email;
+    document.getElementById("name").innerText = name;
+    document.getElementById("dob").innerText = dob;
+    document.getElementById("location").innerText = location;
+}
+
+function finishSignup(){
+    alert("Tạo tài khoản hoàn tất! ✓");
+    window.location.href = "new.html"; // trở về QUEENDOM
+}
+
+loadData();
+</script>
+
+</body>
+</html>
+
