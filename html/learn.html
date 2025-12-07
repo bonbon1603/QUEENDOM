@@ -1,108 +1,656 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Học - QUEENDOM</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>QUEENDOM – Learning Mode</title>
+
 <style>
- body{font-family:Arial;background:linear-gradient(#240020,#3b0b40);color:#fff;padding:36px}
- h1{margin-top:0}
- .levels{display:flex;gap:12px;margin-bottom:18px}
- .level{padding:10px 14px;border-radius:8px;background:#7f3bff;cursor:pointer}
- .level.active{box-shadow:0 6px 0 rgba(0,0,0,0.3);transform:translateY(-2px)}
- .list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
- .card{background:rgba(255,255,255,0.04);padding:12px;border-radius:10px}
- button.play{background:#fff;color:#333;padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
- .known{background:#0f0a2a;color:#9fff9f;padding:6px 8px;border-radius:6px}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+:root{
+  --c1:#8ccaff;
+  --c2:#d4b8ff;
+  --glass:rgba(255,255,255,0.12);
+  --text:#eef6ff;
+}
+
+*{box-sizing:border-box}
+body{
+  font-family:"Poppins",Arial,Helvetica,sans-serif;
+  margin:0;
+  padding:36px 20px;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(20,30,60,0.6), rgba(5,8,18,0.9)),
+    linear-gradient(180deg,#09172b 0%, #0f2946 60%);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* Header */
+.header-wrap{ max-width:1100px; margin:0 auto; text-align:center; }
+h1{
+  font-size:40px;
+  margin:6px 0 8px;
+  color:#fff;
+  letter-spacing:1px;
+  text-shadow:0 6px 28px rgba(140,200,255,0.08);
+}
+.subtitle{
+  color:rgba(230,245,255,0.8);
+  margin-bottom:18px;
+  font-size:15px;
+}
+
+/* MAIN TABS (Learn / Music / Movies) */
+.mainTabs{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:6px;
+  flex-wrap:wrap;
+}
+.main-tab{
+  padding:8px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:800;
+  background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  color:rgba(250,250,255,0.9);
+  border:1px solid rgba(255,255,255,0.06);
+  transition:.18s;
+}
+.main-tab.active{
+  background:linear-gradient(135deg,var(--c1),var(--c2));
+  color:#053046;
+  box-shadow:0 12px 32px rgba(120,180,255,0.14);
+  border:none;
+}
+
+/* Level selector */
+.levels{
+  display:flex;
+  justify-content:center;
+  gap:14px;
+  margin:22px 0;
+  flex-wrap:wrap;
+}
+.level{
+  padding:10px 18px;
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:700;
+  font-size:15px;
+  color:rgba(250,250,255,0.9);
+  background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.06);
+  transition:all .18s ease;
+  backdrop-filter: blur(6px);
+}
+.level:hover{ transform:translateY(-4px); box-shadow:0 10px 30px rgba(60,120,240,0.06); }
+.level.active{
+  background:linear-gradient(135deg,var(--c1),var(--c2));
+  color:#053046;
+  box-shadow:0 12px 40px rgba(120,180,255,0.16);
+  border:none;
+}
+
+/* Grid list */
+.wrapper{ max-width:1100px; margin:0 auto; display:flex; gap:26px; align-items:flex-start; }
+.list{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px;
+}
+
+/* Card */
+.card{
+  padding:16px;
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border:1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 30px rgba(2,8,30,0.6), inset 0 2px 8px rgba(255,255,255,0.02);
+  transition: transform .18s ease;
+}
+.card:hover{ transform: translateY(-6px); }
+.card strong{ display:block; font-size:18px; margin-bottom:8px; color:#fff; }
+.card .meta{ font-size:13px; color:rgba(220,240,255,0.8); margin-bottom:8px; }
+.controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+button{
+  padding:8px 12px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+  font-weight:700;
+  font-size:13px;
+}
+button.play{
+  background: linear-gradient(135deg,var(--c1),var(--c2));
+  color:#062235;
+  box-shadow:0 8px 20px rgba(140,200,255,0.14);
+}
+button.play:disabled{ opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none; }
+button.toggle{
+  background: rgba(255,255,255,0.06);
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.05);
+}
+.known-tag{
+  margin-top:10px;
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:8px;
+  background:#88ffb5;
+  color:#003315;
+  font-weight:700;
+  font-size:12px;
+  box-shadow:0 6px 18px rgba(120,255,170,0.08);
+}
+
+/* Right column: player + info */
+.right-col{ width:560px; max-width:46%; min-width:320px; }
+.player-wrap{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:14px; padding:18px; border:1px solid rgba(255,255,255,0.04); box-shadow: 0 8px 40px rgba(0,0,0,0.6); }
+#player{ width:100%; height:320px; border-radius:12px; background:#000; outline:none; }
+
+/* music layout */
+.music-layout{ display:flex; gap:12px; align-items:flex-start; }
+.music-left, .music-right { flex:1; min-width:0; }
+.music-left iframe{ width:100%; height:280px; border-radius:10px; border:0; background:#000; }
+.music-right video{ width:100%; height:280px; border-radius:10px; background:#000; display:block; }
+
+/* search */
+.search-row{ display:flex; gap:8px; margin-bottom:12px; align-items:center; }
+.search-row input{ flex:1; padding:10px 12px; border-radius:10px; border:none; font-size:14px; background:rgba(255,255,255,0.06); color:var(--text); outline:none; }
+.search-row button{ padding:10px 12px; border-radius:10px; border:none; background:linear-gradient(135deg,var(--c1),var(--c2)); color:#062235; font-weight:800; cursor:pointer; }
+
+/* movies placeholder */
+.movies-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+
+/* helper */
+.note{ margin-top:12px; font-size:13px; color:rgba(220,240,255,0.8); }
+
+/* sparkle clouds */
+.cloud{
+  position:fixed;
+  width:80px;
+  opacity:0.9;
+  pointer-events:none;
+  z-index:2;
+  animation: float 6s infinite ease-in-out;
+  filter: drop-shadow(0 8px 18px rgba(100,180,255,0.08));
+}
+@keyframes float{ 0%{ transform:translateY(0) } 50%{ transform:translateY(-22px) } 100%{ transform:translateY(0) } }
+
+/* responsive */
+@media (max-width:980px){
+  .wrapper{ flex-direction:column; }
+  .right-col{ width:100%; max-width:100%; min-width:unset; order:2; }
+  .list{ order:1; }
+  #player{ height:240px; }
+  .music-layout{ flex-direction:column; }
+  .music-left iframe, .music-right video{ height:220px; }
+}
 </style>
 </head>
 <body>
-  <h1>Chế độ Học</h1>
-  <div class="levels">
-    <div class="level active" data-level="easy">Dễ</div>
-    <div class="level" data-level="medium">Trung bình</div>
-    <div class="level" data-level="hard">Khó</div>
+
+<div class="header-wrap">
+  <h1>QUEENDOM — Learning Mode</h1>
+  <div class="subtitle">Choose Learn/Music/Movies. Music view shows YouTube + your sign-language video side-by-side (upload if missing).</div>
+</div>
+
+<!-- main tabs -->
+<div class="mainTabs" role="tablist" aria-label="Main sections">
+  <div class="main-tab active" data-section="learn" tabindex="0">Learn</div>
+  <div class="main-tab" data-section="music" tabindex="0">Music</div>
+  <div class="main-tab" data-section="movies" tabindex="0">Movies</div>
+</div>
+
+<!-- LEARN SECTION (keeps original UI) -->
+<section id="learnSection">
+  <div class="levels" role="tablist" aria-label="Levels">
+    <div class="level active" data-level="easy" role="tab" tabindex="0">Easy</div>
+    <div class="level" data-level="medium" role="tab" tabindex="0">Medium</div>
+    <div class="level" data-level="hard" role="tab" tabindex="0">Hard</div>
   </div>
 
-  <div id="wordList" class="list"></div>
+  <div class="wrapper" role="main">
+    <div class="list" id="wordList" aria-live="polite"></div>
 
-  <video id="player" width="480" controls style="display:block;margin-top:18px"></video>
+    <div class="right-col">
+      <div class="player-wrap">
+        <video id="player" controls playsinline preload="metadata"></video>
+        <div class="note" id="playerNote">Player ready. Select a lesson to play.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MUSIC SECTION (hidden by default) -->
+<section id="musicSection" style="display:none; margin-top:18px;">
+  <div style="max-width:1100px; margin:0 auto;">
+    <div class="search-row">
+      <input id="musicSearch" placeholder="Search song name or paste YouTube URL (e.g. https://youtu.be/abc...)" />
+      <button id="musicSearchBtn">Search</button>
+    </div>
+
+    <div class="music-layout">
+      <div class="music-left">
+        <div style="font-weight:700; margin-bottom:8px">YouTube</div>
+        <iframe id="ytPlayer" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <div class="note" id="ytNote">Search or paste link to load YouTube video.</div>
+      </div>
+
+      <div class="music-right">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="font-weight:700">Sign-language Video</div>
+          <div style="font-size:13px; color:rgba(220,240,255,0.8)">(Upload if you have a local sign video)</div>
+        </div>
+
+        <video id="signPlayer" controls playsinline preload="metadata" style="display:none;"></video>
+        <div id="signPlaceholder" style="padding:18px; border-radius:10px; background:rgba(255,255,255,0.02); color:rgba(220,240,255,0.9);">
+          Will be updated soon — no sign video uploaded yet.
+        </div>
+
+        <div style="margin-top:12px;">
+          <input type="file" id="signUpload" accept="video/*" />
+          <div class="note">Uploading signs saves to localStorage (for demo). Large videos may fail — recommended small clips.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:18px">
+      <div style="font-weight:700; margin-bottom:8px">Search results</div>
+      <div id="musicResults" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MOVIES SECTION -->
+<section id="moviesSection" style="display:none; margin-top:18px;">
+  <div style="max-width:1100px; margin:0 auto;">
+    <div style="font-weight:700; margin-bottom:12px">Movies (Coming soon)</div>
+    <div class="movies-grid" id="moviesGrid">
+      <div class="card"><strong>Movie Library</strong><div class="meta">You can add movie entries later — placeholder for future catalog and long-form sign-language videos.</div></div>
+      <div class="card"><strong>Note on Copyright</strong><div class="meta">Remember: long commercial movies may have copyright issues when hosting. We'll keep this section as pointer to authorized sources.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- floating clouds -->
+<div class="cloud" style="top:90px; left:28px;">
+  <svg viewBox="0 0 64 64" width="100%"><path d="M20 48h28a12 12 0 0 0 2-24 16 16 0 0 0-30-6A14 14 0 0 0 20 48z" fill="white" opacity="0.9"/></svg>
+</div>
+<div class="cloud" style="top:220px; right:60px; animation-duration:7s;">
+  <svg viewBox="0 0 64 64" width="100%"><path d="M20 48h28a12 12 0 0 0 2-24 16 16 0 0 0-30-6A14 14 0 0 0 20 48z" fill="white" opacity="0.9"/></svg>
+</div>
 
 <script>
-/* Dữ liệu ví dụ: từ -> file mp4 (điền tên đúng file của bạn) */
+/* ---------------------------
+   Existing Learn code (unchanged logic)
+   --------------------------- */
+
+/* dictionary: word -> filename (relative to this HTML) */
 const dictionary = {
-  "tôi": "toi.mp4",
-  "không": "khong.mp4",
-  "biết": "biet.mp4",
-  "bạn": "ban.mp4",
-  "đang": "dang.mp4",
-  "nói": "noi.mp4",
-  "gì": "gi.mp4",
-  "hiểu": "hieu.mp4",
-  "yêu": "yeu.mp4",
-  "anh": "anh.mp4",
-  "em": "em.mp4"
+  "I": "videos/i.mp4",
+  "know": "videos/know.mp4",
+  "understand": "videos/understand.mp4",
+  "what": "videos/what.mp4"
+  // add more mappings here if you add more files
 };
 
-/* Các level: mảng từ */
 const levels = {
-  easy: ["tôi","bạn","anh","em","yêu"],
-  medium: ["đang","nói","gì","hiểu"],
-  hard: ["không","biết"]
+  easy: [
+    { title: "I", info: "Basic pronoun" },
+    { title: "what", info: "Question word" },
+    { title: "know", info: "Verb: to know" }
+  ],
+  medium: [
+    { title: "understand", info: "Verb: to understand" },
+    { title: "you", info: "Pronoun: you" },
+    { title: "speak", info: "Action: speak" }
+  ],
+  hard: [
+    { title: "question", info: "Noun: question" },
+    { title: "answer", info: "Noun/verb: answer" },
+    { title: "complex", info: "Complex phrase" }
+  ]
 };
 
-/* Lưu progress */
 const STORAGE_KEY = 'queendom_learn_known';
-const known = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+let known = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 
-const player = document.getElementById('player');
 const wordList = document.getElementById('wordList');
+const player = document.getElementById('player');
+const playerNote = document.getElementById('playerNote');
+
+function saveKnown(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(known));
+}
+function isKnown(word){ return known.indexOf(word) !== -1; }
+function toggleKnown(word){
+  if(isKnown(word)){
+    known = known.filter(x => x !== word);
+  } else {
+    known.push(word);
+  }
+  saveKnown();
+}
 
 function showLevel(level){
   wordList.innerHTML = '';
-  levels[level].forEach(w => {
-    const c = document.createElement('div');
-    c.className = 'card';
-    c.innerHTML = `<strong>${w}</strong><div style="margin-top:8px">
-      <button class="play">▶️ Phát</button>
-      <button class="toggle">${ known.includes(w) ? 'Đã biết' : 'Đánh dấu' }</button>
-      </div>`;
-    // play
-    c.querySelector('.play').addEventListener('click', ()=> {
-      const f = dictionary[w];
-      if (f) {
-        player.src = f;
-        player.play().catch(e=>console.warn(e));
-      } else {
-        alert('Chưa có video cho từ: ' + w);
+  const lessons = levels[level] || [];
+  if(lessons.length === 0){
+    wordList.innerHTML = '<div style="grid-column:1/-1;padding:18px;border-radius:12px;background:rgba(255,255,255,0.03);color:#dfeeff">No lessons yet for this level.</div>';
+    return;
+  }
+
+  lessons.forEach(item=>{
+    const w = item.title;
+    const card = document.createElement('div');
+    card.className = 'card';
+    const hasVideo = !!dictionary[w];
+    card.innerHTML = `
+      <strong>${escapeHtml(w)}</strong>
+      <div class="meta">${escapeHtml(item.info || '')}</div>
+      <div class="controls">
+        <button class="play" ${hasVideo ? '' : 'disabled'}>${ hasVideo ? 'Play' : 'No video' }</button>
+        <button class="toggle">${ isKnown(w) ? 'Known' : 'Mark' }</button>
+      </div>
+    `;
+    // play handler
+    const playBtn = card.querySelector('.play');
+    playBtn.addEventListener('click', ()=>{
+      const file = dictionary[w];
+      if(!file){
+        player.pause();
+        player.src = "";
+        playerNote.textContent = "No video file for this lesson yet.";
+        return;
       }
-    });
-    // toggle known
-    c.querySelector('.toggle').addEventListener('click', (ev)=> {
-      if (!known.includes(w)) known.push(w);
-      else { const i = known.indexOf(w); known.splice(i,1); }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(known));
-      ev.target.textContent = known.includes(w) ? 'Đã biết' : 'Đánh dấu';
+      player.src = file;
+      player.play().catch(e=>{
+        console.warn("Play failed:", e);
+        playerNote.textContent = "Unable to autoplay: user interaction may be required. Press play on the player.";
+      });
+      playerNote.textContent = "Now playing: " + w;
+      player.scrollIntoView({behavior:'smooth', block:'center'});
     });
 
-    if (known.includes(w)){
-      const k = document.createElement('div'); k.className='known'; k.textContent='Đã biết';
-      c.appendChild(k);
+    // toggle known
+    const toggleBtn = card.querySelector('.toggle');
+    toggleBtn.addEventListener('click', (ev)=>{
+      toggleKnown(w);
+      toggleBtn.textContent = isKnown(w) ? 'Known' : 'Mark';
+      refreshLevelState();
+    });
+
+    // known tag
+    if(isKnown(w)){
+      const tag = document.createElement('div');
+      tag.className = 'known-tag';
+      tag.textContent = 'Learned';
+      card.appendChild(tag);
     }
-    wordList.appendChild(c);
+
+    wordList.appendChild(card);
   });
 }
 
-/* level button */
-document.querySelectorAll('.level').forEach(el=>{
+/* UI level buttons */
+document.querySelectorAll('#learnSection .level').forEach(el=>{
   el.addEventListener('click', ()=>{
-    document.querySelectorAll('.level').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('#learnSection .level').forEach(x=>x.classList.remove('active'));
     el.classList.add('active');
     showLevel(el.dataset.level);
   });
+  el.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') el.click(); });
 });
 
-// init
-showLevel('easy');
+function refreshLevelState(){
+  const active = document.querySelector('#learnSection .level.active').dataset.level;
+  showLevel(active);
+}
+refreshLevelState();
+
+/* ---------------------------
+   New: Main Tabs handling
+   --------------------------- */
+const mainTabs = document.querySelectorAll('.main-tab');
+const learnSection = document.getElementById('learnSection');
+const musicSection = document.getElementById('musicSection');
+const moviesSection = document.getElementById('moviesSection');
+
+mainTabs.forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    mainTabs.forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const sec = tab.dataset.section;
+    learnSection.style.display = sec==='learn' ? '' : 'none';
+    musicSection.style.display = sec==='music' ? '' : 'none';
+    moviesSection.style.display = sec==='movies' ? '' : 'none';
+    // refresh learn if needed
+    if(sec === 'learn') refreshLevelState();
+  });
+  tab.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') tab.click(); });
+});
+
+/* ---------------------------
+   Music Section logic
+   --------------------------- */
+
+/* Simple music index:
+   - id: internal id (used for storage key)
+   - title: display
+   - youtube: youtube video id (or full URL)
+   - sign: optional path to local sign video file (e.g. "videos/sign_...mp4")
+*/
+const musicIndex = [
+  { id:'song1', title:'Song: I Know', youtube:'iDkYx0k4g6k' }, // put real IDs
+  { id:'song2', title:'Song: Understand', youtube:'XyZAbc12345' },
+  { id:'song3', title:'Song: What', youtube:'' } // empty => maybe not on yt yet
+];
+
+// pre-mapped sign videos by id (optional)
+const musicSign = {
+  // 'song1': 'videos/song1_sign.mp4' // if you have file, map here
+};
+
+// localStorage key prefix for uploaded sign videos
+const SIGN_KEY_PREFIX = 'queendom_sign_';
+
+const musicResults = document.getElementById('musicResults');
+const musicSearch = document.getElementById('musicSearch');
+const musicSearchBtn = document.getElementById('musicSearchBtn');
+const ytPlayer = document.getElementById('ytPlayer');
+const ytNote = document.getElementById('ytNote');
+const signPlayer = document.getElementById('signPlayer');
+const signPlaceholder = document.getElementById('signPlaceholder');
+const signUpload = document.getElementById('signUpload');
+
+function renderMusicResults(list){
+  musicResults.innerHTML = '';
+  list.forEach(item=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<strong>${escapeHtml(item.title)}</strong>
+                      <div class="meta">${item.youtube ? 'YouTube available' : 'No YouTube link'}</div>
+                      <div class="controls">
+                        <button class="play-music" ${item.youtube ? '' : 'disabled'}>Open</button>
+                        <button class="upload-music">Upload Sign</button>
+                      </div>`;
+    // Open -> load into players
+    card.querySelector('.play-music').addEventListener('click', ()=>{
+      loadMusicItem(item);
+      // focus scroll
+      ytPlayer.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+    // Upload -> open file input (we'll set selected target)
+    card.querySelector('.upload-music').addEventListener('click', ()=>{
+      // store selected id on input for handler
+      signUpload.dataset.targetId = item.id;
+      signUpload.click();
+    });
+    musicResults.appendChild(card);
+  });
+}
+
+/* load music item: show youtube and sign (if uploaded or mapped) */
+function loadMusicItem(item){
+  // youtube
+  if(item.youtube){
+    // support full URL or id
+    let vid = item.youtube;
+    // if user pasted full URL earlier we'll pass it here; function below handles
+    const ytUrl = buildYoutubeEmbedUrl(vid);
+    ytPlayer.src = ytUrl;
+    ytNote.textContent = 'YouTube: ' + item.title;
+  } else {
+    ytPlayer.src = '';
+    ytNote.textContent = 'No YouTube available for this song yet.';
+  }
+
+  // sign video: priority: localStorage uploaded => musicSign mapping => not found
+  const uploadKey = SIGN_KEY_PREFIX + item.id;
+  const uploaded = localStorage.getItem(uploadKey);
+  if(uploaded){
+    signPlayer.src = uploaded;
+    signPlayer.style.display = 'block';
+    signPlaceholder.style.display = 'none';
+    signPlayer.play().catch(()=>{});
+  } else if(musicSign[item.id]){
+    signPlayer.src = musicSign[item.id];
+    signPlayer.style.display = 'block';
+    signPlaceholder.style.display = 'none';
+    signPlayer.play().catch(()=>{});
+  } else {
+    signPlayer.pause();
+    signPlayer.src = '';
+    signPlayer.style.display = 'none';
+    signPlaceholder.style.display = 'block';
+    signPlaceholder.innerText = 'Will be updated soon — no sign-language video uploaded for this song.';
+  }
+
+  // remember current item id for upload convenience
+  ytPlayer.dataset.currentId = item.id;
+}
+
+/* search logic */
+function isYoutubeUrl(q){
+  return /youtu\.be\/|youtube\.com\/watch|youtube\.com\/embed/.test(q);
+}
+function extractYoutubeId(q){
+  // try to extract id from many formats
+  try{
+    // if full url
+    const u = new URL(q);
+    if(u.hostname.includes('youtu.be')){
+      return u.pathname.slice(1);
+    }
+    if(u.hostname.includes('youtube.com')){
+      return u.searchParams.get('v') || (u.pathname.startsWith('/embed/') ? u.pathname.split('/embed/')[1] : '');
+    }
+  }catch(e){}
+  // fallback: treat q as id
+  return q;
+}
+function buildYoutubeEmbedUrl(idOrUrl){
+  if(!idOrUrl) return '';
+  if(isYoutubeUrl(idOrUrl)){
+    const id = extractYoutubeId(idOrUrl);
+    return 'https://www.youtube.com/embed/' + encodeURIComponent(id) + '?rel=0';
+  }
+  // if looks like id already
+  if(/^[A-Za-z0-9_-]{6,}$/.test(idOrUrl)) return 'https://www.youtube.com/embed/' + encodeURIComponent(idOrUrl) + '?rel=0';
+  return '';
+}
+
+/* handle search button */
+musicSearchBtn.addEventListener('click', ()=>{
+  const q = musicSearch.value.trim();
+  doMusicSearch(q);
+});
+musicSearch.addEventListener('keydown', (e)=>{ if(e.key==='Enter') musicSearchBtn.click(); });
+
+function doMusicSearch(q){
+  if(!q){
+    renderMusicResults(musicIndex);
+    return;
+  }
+  // if youtube url or id -> create temporary item and load
+  if(isYoutubeUrl(q) || /^[A-Za-z0-9_-]{6,}$/.test(q)){
+    const id = extractYoutubeId(q);
+    const tmp = { id: 'custom_'+Date.now(), title: 'Custom YouTube video', youtube: id };
+    renderMusicResults([tmp]);
+    loadMusicItem(tmp);
+    return;
+  }
+  // normal text search: match title
+  const out = musicIndex.filter(m => m.title.toLowerCase().indexOf(q.toLowerCase()) >= 0);
+  renderMusicResults(out.length ? out : []);
+}
+
+/* initial music results */
+renderMusicResults(musicIndex);
+
+/* sign upload handling */
+signUpload.addEventListener('change', function(){
+  const file = this.files && this.files[0];
+  const targetId = this.dataset.targetId || ytPlayer.dataset.currentId;
+  if(!file){
+    return;
+  }
+  if(!targetId){
+    alert('No target song selected to attach this sign video. Click Upload on a song first.');
+    return;
+  }
+  if(!file.type.startsWith('video/')){
+    alert('Please choose a video file.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      localStorage.setItem(SIGN_KEY_PREFIX + targetId, e.target.result);
+      alert('Uploaded and saved locally ✓');
+      // if currently loaded item matches, refresh sign player
+      const cur = ytPlayer.dataset.currentId;
+      if(cur === targetId){
+        loadMusicItem({ id: targetId, title: 'Uploaded', youtube: ytPlayer.src ? extractYoutubeId(ytPlayer.src) : '' });
+      }
+    }catch(err){
+      console.warn('Save failed', err);
+      alert('Saving failed. Video may be too large for localStorage. Try a smaller clip or host externally and paste URL.');
+    }
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ---------------------------
+   Movies simple placeholder (expand later)
+   --------------------------- */
+
+/* ---------------------------
+   Utilities
+   --------------------------- */
+function escapeHtml(s){
+  if(!s) return '';
+  return String(s).replace(/[&<>"'`=\/]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c];
+  });
+}
+
+/* Keep a small debug API */
+window.QUEENDOM = {
+  musicIndex, musicSign, loadMusicItem,
+  dictionary, levels, known
+};
 </script>
+
 </body>
 </html>
