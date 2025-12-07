@@ -36,11 +36,11 @@ button{
 </head>
 <body>
 <h1>Mini Game Playground</h1>
-<p>Chọn một game để chơi:</p>
+<p>Pick One:</p>
 
 <!-- Game buttons -->
-<button onclick="showGame('guess')">🎯 Đoán số</button>
-<button onclick="showGame('clicker')">⚡ Click Nhanh</button>
+<button onclick="showGame('guess')">🎯 Guess Numbers</button>
+<button onclick="showGame('clicker')">⚡ Click Faster</button>
 <button onclick="showGame('tictactoe')">❌⭕ Tic Tac Toe</button>
 
 <!-- Game display area -->
@@ -56,9 +56,9 @@ function showGame(game){
 /* 1. Guess number game */
 function loadGuessGame(){
     document.getElementById('gameArea').innerHTML = `
-        <h3>🎯 Game: Đoán số 1 - 10</h3>
-        <input id="gNum" type="number" placeholder="Nhập số">
-        <button onclick="checkGuess()">Kiểm tra</button>
+        <h3>🎯 Game: Guess number from 1 - 10</h3>
+        <input id="gNum" type="number" placeholder="Type">
+        <button onclick="checkGuess()">Check</button>
         <p id="gResult"></p>
     `;
     window.secret = Math.floor(Math.random() * 10) + 1;
@@ -66,17 +66,17 @@ function loadGuessGame(){
 function checkGuess(){
     let val = document.getElementById('gNum').value;
     let res = document.getElementById('gResult');
-    if(val == window.secret) res.innerHTML = "🎉 Chính xác!";
-    else res.innerHTML = "Sai rồi, thử lại!";
+    if(val == window.secret) res.innerHTML = "🎉 Exactly!";
+    else res.innerHTML = "Wrong, try again!";
 }
 
 /* 2. Click speed game */
 function loadClickerGame(){
     document.getElementById('gameArea').innerHTML = `
-        <h3>⚡ Game: Click nhanh trong 3 giây</h3>
+        <h3>⚡ Game: Click speed in 3s</h3>
         <button id="clickBtn" onclick="countClick()">CLICK!</button>
-        <p id="clickResult">Bấm bắt đầu để chơi</p>
-        <button onclick="startClickGame()">Bắt đầu</button>
+        <p id="clickResult">start</p>
+        <button onclick="startClickGame()">start</button>
     `;
     window.clickCount = 0;
     window.clickActive = false;
@@ -84,10 +84,10 @@ function loadClickerGame(){
 function startClickGame(){
     window.clickCount = 0;
     window.clickActive = true;
-    document.getElementById('clickResult').innerHTML = "Đang đếm...";
+    document.getElementById('clickResult').innerHTML = "counting...";
     setTimeout(()=>{
         window.clickActive = false;
-        document.getElementById('clickResult').innerHTML = "Bạn đã click: " + window.clickCount;
+        document.getElementById('clickResult').innerHTML = "check: " + window.clickCount;
     },3000);
 }
 function countClick(){ if(window.clickActive) window.clickCount++; }
@@ -134,4 +134,5 @@ function disableTTT(){
 </script>
 </body>
 </html>
+
 
