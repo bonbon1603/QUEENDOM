@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Game</title>
+<title>Mini Game Playground</title>
 <style>
 body{
     background:linear-gradient(140deg,#fff,#cdeaff,#ffd6f9);
@@ -10,10 +10,128 @@ body{
     font-family:Arial;
 }
 h1{ font-size:40px; }
+
+/* Remove border from forms */
+form, input, button{
+    border:none;
+    outline:none;
+}
+
+/* Game container */
+.game-box{
+    margin-top:30px;
+    background:white;
+    padding:20px;
+    width:350px;
+    border-radius:20px;
+    box-shadow:0 0 15px #0003;
+}
+button{
+    padding:10px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    margin-top:10px;
+}
 </style>
 </head>
 <body>
 <h1>Mini Game Playground</h1>
-<p>Your game will appear here soon!</p>
+<p>Chọn một game để chơi:</p>
+
+<!-- Game buttons -->
+<button onclick="showGame('guess')">🎯 Đoán số</button>
+<button onclick="showGame('clicker')">⚡ Click Nhanh</button>
+<button onclick="showGame('tictactoe')">❌⭕ Tic Tac Toe</button>
+
+<!-- Game display area -->
+<div id="gameArea" class="game-box"></div>
+
+<script>
+function showGame(game){
+    if(game === 'guess') loadGuessGame();
+    if(game === 'clicker') loadClickerGame();
+    if(game === 'tictactoe') loadTicTacToe();
+}
+
+/* 1. Guess number game */
+function loadGuessGame(){
+    document.getElementById('gameArea').innerHTML = `
+        <h3>🎯 Game: Đoán số 1 - 10</h3>
+        <input id="gNum" type="number" placeholder="Nhập số">
+        <button onclick="checkGuess()">Kiểm tra</button>
+        <p id="gResult"></p>
+    `;
+    window.secret = Math.floor(Math.random() * 10) + 1;
+}
+function checkGuess(){
+    let val = document.getElementById('gNum').value;
+    let res = document.getElementById('gResult');
+    if(val == window.secret) res.innerHTML = "🎉 Chính xác!";
+    else res.innerHTML = "Sai rồi, thử lại!";
+}
+
+/* 2. Click speed game */
+function loadClickerGame(){
+    document.getElementById('gameArea').innerHTML = `
+        <h3>⚡ Game: Click nhanh trong 3 giây</h3>
+        <button id="clickBtn" onclick="countClick()">CLICK!</button>
+        <p id="clickResult">Bấm bắt đầu để chơi</p>
+        <button onclick="startClickGame()">Bắt đầu</button>
+    `;
+    window.clickCount = 0;
+    window.clickActive = false;
+}
+function startClickGame(){
+    window.clickCount = 0;
+    window.clickActive = true;
+    document.getElementById('clickResult').innerHTML = "Đang đếm...";
+    setTimeout(()=>{
+        window.clickActive = false;
+        document.getElementById('clickResult').innerHTML = "Bạn đã click: " + window.clickCount;
+    },3000);
+}
+function countClick(){ if(window.clickActive) window.clickCount++; }
+
+/* 3. Tic Tac Toe */
+function loadTicTacToe(){
+    document.getElementById('gameArea').innerHTML = `
+        <h3>❌⭕ Tic Tac Toe</h3>
+        <div id="board" style="display:grid;grid-template-columns:repeat(3,80px);gap:5px;"></div>
+        <p id="tttResult"></p>
+    `;
+    window.ttt = Array(9).fill('');
+    window.turn = 'X';
+    let board = document.getElementById('board');
+
+    for(let i=0;i<9;i++){
+        let cell = document.createElement('button');
+        cell.style.height = "80px";
+        cell.style.fontSize = "30px";
+        cell.onclick = ()=>tttPlay(i);
+        board.appendChild(cell);
+    }
+}
+function tttPlay(i){
+    if(window.ttt[i] !== '') return;
+    window.ttt[i] = window.turn;
+    document.querySelectorAll('#board button')[i].innerHTML = window.turn;
+
+    if(checkWin(window.turn)){
+        document.getElementById('tttResult').innerHTML = window.turn + " thắng!";
+        disableTTT();
+        return;
+    }
+
+    window.turn = window.turn === 'X' ? 'O' : 'X';
+}
+function checkWin(p){
+    let w = [ [0,1,2],[3,4,5],[6,7,8], [0,3,6],[1,4,7],[2,5,8], [0,4,8],[2,4,6] ];
+    return w.some(c => c.every(i => window.ttt[i] === p));
+}
+function disableTTT(){
+    document.querySelectorAll('#board button').forEach(b=>b.disabled=true);
+}
+</script>
 </body>
 </html>
+
