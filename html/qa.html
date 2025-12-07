@@ -207,14 +207,76 @@
 </svg>
 
 <script>
-/* QA user page - localStorage + BroadcastChannel */
-const channel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('qa_channel') : null;
+/* === KIỂM TRA LOGIN === */
+/* --- CHÚ Ý ---:
+   - Trang đăng nhập (new.html / signin.html) phải set localStorage.setItem("user_logged_in","yes")
+   - Mình dùng key: "user_logged_in" để đồng bộ giữa các tab
+*/
+
+let isLogged = localStorage.getItem("user_logged_in") === "yes";
+
 const chatBox = document.getElementById('chatBox');
-const input = document.getElementById('questionInput');
+const input   = document.getElementById('questionInput');
 const sendBtn = document.getElementById('sendBtn');
+
+/* khóa input nếu chưa login */
+function updateLoginStateUI(){
+  if(!isLogged){
+    input.disabled = true;
+    sendBtn.disabled = true;
+    input.placeholder = "⚠ Bạn phải đăng nhập trước khi gửi câu hỏi!";
+    sendBtn.style.opacity = "0.4";
+  } else {
+    input.disabled = false;
+    sendBtn.disabled = false;
+    input.placeholder = "Type something...";
+    sendBtn.style.opacity = "1";
+  }
+}
+updateLoginStateUI();
+
+/* thông báo đẹp */
+function flash(text){
+  const n = document.createElement('div');
+  n.className = 'notice';
+  n.innerText = text;
+  document.body.appendChild(n);
+  setTimeout(()=> n.style.opacity = '0', 3000);
+  setTimeout(()=> n.remove(), 3800);
+}
+
+/* lắng nghe thay đổi đăng nhập từ tab khác (cross-tab) */
+window.addEventListener('storage', function(e){
+  try{
+    if(e.key === 'user_logged_in'){
+      isLogged = e.newValue === 'yes';
+      updateLoginStateUI();
+      if(isLogged) flash('🎉 Đã đăng nhập — bạn có thể gửi câu hỏi.');
+      else flash('🔒 Bạn đã đăng xuất.');
+    }
+    // data QA thay đổi ở tab khác -> render lại
+    if(e.key === 'qa_data' || e.key === 'qa_update') render();
+  }catch(err){
+    console.warn('storage handler err', err);
+  }
+});
+
+/* message event fallback (nếu page đăng nhập gửi postMessage) */
+window.addEventListener("message", ev=>{
+  if(ev.data === "logged"){
+    localStorage.setItem("user_logged_in","yes");
+    isLogged = true;
+    updateLoginStateUI();
+    flash("🎉 Đăng nhập thành công!");
+  }
+});
+
+/* channel */
+const channel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('qa_channel') : null;
 
 function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"'`=\/]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'})[c]); }
 
+/* render Q&A */
 function render(){
   const data = JSON.parse(localStorage.getItem('qa_data')) || [];
   chatBox.innerHTML = '';
@@ -222,103 +284,83 @@ function render(){
   data.forEach(msg=>{
     const div = document.createElement('div');
     div.className = 'msg';
-    // avatar left
     div.innerHTML = `
-      <div class="avatar" title="${escapeHtml(msg.fromName||'Người dùng')}">
-        <svg width="22" height="22" fill="white"><use href="#ic-user"></use></svg>
-      </div>
-      <div style="position:relative">
+      <div class="avatar"><svg width="22" height="22" fill="white"><use href="#ic-user"></use></svg></div>
+      <div>
         <div class="bubble">
           <div class="text">${escapeHtml(msg.text)}</div>
           <div class="meta">${msg.time}</div>
-          ${ msg.answer ? `<div class="answerBox">💬 ${escapeHtml(msg.answer)}${ msg.answeredAt ? `<div style="font-size:11px;color:#5b6b80;margin-top:6px">Trả lời: ${escapeHtml(msg.answeredAt)}</div>` : '' }</div>` : '' }
+          ${
+            msg.answer
+            ? `<div class="answerBox">💬 ${escapeHtml(msg.answer)}${ msg.answeredAt ? `<div style="font-size:11px;color:#5b6b80;margin-top:6px">Trả lời: ${escapeHtml(msg.answeredAt)}</div>` : '' }</div>`
+            : ""
+          }
         </div>
       </div>
     `;
-    // If just answered, add badge and pop effect
-    if(msg.answer && msg._justAnswered){
-      const badge = document.createElement('div');
-      badge.className = 'badge-new';
-      badge.innerText = 'Mới';
-      div.querySelector('.bubble').appendChild(badge);
-      // remove temporary flag
-      delete msg._justAnswered;
-      // save update to localStorage (remove internal flag)
-      const all = JSON.parse(localStorage.getItem('qa_data')) || [];
-      const idx = all.findIndex(x=>x.id===msg.id);
-      if(idx>=0){ all[idx].answer = msg.answer; all[idx].answeredAt = msg.answeredAt; localStorage.setItem('qa_data', JSON.stringify(all)); }
-    }
     chatBox.appendChild(div);
   });
   chatBox.scrollTop = chatBox.scrollHeight;
 }
-// kiểm tra đăng nhập
-function isLoggedIn() {
-  return localStorage.getItem('user_logged_in') === 'yes';
-}
 
-// send new question
+/* gửi câu hỏi */
 function sendQuestion(){
+  if(!isLogged){
+    flash("🚫 Bạn phải đăng nhập để gửi tin!");
+    return;
+  }
   const text = input.value.trim();
   if(!text) return;
+
   const data = JSON.parse(localStorage.getItem('qa_data')) || [];
-  const obj = { id: Date.now(), text, time: new Date().toLocaleString(), answer:'', answeredAt:'', fromName:'' };
+  const obj = {
+    id: Date.now(),
+    text,
+    time: new Date().toLocaleString(),
+    answer:'',
+    answeredAt:''
+  };
   data.push(obj);
   localStorage.setItem('qa_data', JSON.stringify(data));
-  // notify
+  // notify other tabs (some browsers require changing value to trigger storage)
   try{ localStorage.setItem('qa_update', Date.now().toString()); }catch(e){}
-  if(channel) try{ channel.postMessage({type:'new', id: obj.id}); }catch(e){}
+
+  if(channel) channel.postMessage({type:'new', id: obj.id});
+
   input.value='';
   render();
 }
+
 sendBtn.addEventListener('click', sendQuestion);
 input.addEventListener('keydown', e=>{ if(e.key==='Enter') sendQuestion(); });
 
-// listen broadcast for answers
+/* nhận trả lời từ admin */
 if(channel){
   channel.onmessage = ev=>{
     const d = ev.data;
     if(!d) return;
     if(d.type === 'answer'){
-      // mark message as just answered to show badge
       const data = JSON.parse(localStorage.getItem('qa_data')) || [];
       const idx = data.findIndex(x=>x.id===d.id);
       if(idx>=0){
         data[idx].answer = d.answer;
-        data[idx].answeredAt = d.answeredAt || new Date().toLocaleString();
-        // temporary flag to show badge (not persisted)
-        data[idx]._justAnswered = true;
+        data[idx].answeredAt = d.answeredAt;
         localStorage.setItem('qa_data', JSON.stringify(data));
       }
-      // flash small notif
-      flash("Bạn vừa nhận được trả lời ✨");
+      flash("✨ Bạn có tin nhắn mới!");
       render();
     }
-    if(d.type === 'new'){
-      render();
-    }
+    if(d.type === 'new'){ render(); }
   };
 }
 
-// storage event fallback
 window.addEventListener('storage', e=>{
-  if(e.key === 'qa_data' || e.key === 'qa_update') render();
+  if(e.key === 'qa_data') render();
 });
 
-// small flash UI
-function flash(text){
-  const n = document.createElement('div');
-  n.className = 'notice';
-  n.style.right = '18px';
-  n.style.bottom = '18px';
-  n.innerText = text;
-  document.body.appendChild(n);
-  setTimeout(()=> n.style.opacity = '0', 3000);
-  setTimeout(()=> n.remove(), 3800);
-}
-
-// initial render
+/* khởi tạo */
 render();
 </script>
+
 </body>
 </html>
