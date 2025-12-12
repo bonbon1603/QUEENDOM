@@ -1,0 +1,808 @@
+<!DOCTYPE html> 
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dịch câu → Ngôn ngữ kí hiệu</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@300;500&display=swap" rel="stylesheet">
+
+<style>
+/* ===================== Base / layout ===================== */
+:root{
+  --bg-left: #12000b;    /* very dark */
+  --bg-right: #6b0a8a;   /* purple */
+  --accent: #c85bff;
+  --muted: rgba(255,255,255,0.08);
+  --card-bg: rgba(10,6,12,0.6);
+  --pill-bg: rgba(255,255,255,0.08);
+  --glass: rgba(255,255,255,0.04);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:linear-gradient(120deg,var(--bg-left),var(--bg-right));font-family:"Cormorant Garamond", "Cinzel", serif;color:#fff;}
+
+/* sparkle overlay */
+body::before{
+  content:"";
+  position:fixed; inset:0; z-index:0;
+  pointer-events:none;
+  background-image:
+    radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+    radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 30px 30px, 80px 80px;
+  opacity:0.28;
+  mix-blend-mode:overlay;
+  animation: sparkleShift 12s linear infinite;
+  transform: translateZ(0);
+}
+@keyframes sparkleShift {
+  0% { background-position: 0 0, 0 0; }
+  50%{ background-position: 200px -100px, -150px 120px; }
+  100%{ background-position: 0 0, 0 0; }
+}
+
+/* page container */
+.container{
+  position:relative;
+  z-index:1;
+  max-width:1100px;
+  margin:38px auto;
+  padding:28px;
+  backdrop-filter: blur(6px);
+}
+
+/* hero/title */
+.header{
+  text-align:center;
+  margin-bottom:24px;
+}
+.title{
+  font-family:"Cinzel", serif;
+  font-weight:700;
+  letter-spacing:2px;
+  font-size:44px;
+  margin:6px 0;
+  color: #fff;
+  text-shadow: 0 6px 24px rgba(0,0,0,0.6);
+}
+.subtitle{
+  margin-top:6px;
+  color: rgba(255,255,255,0.75);
+  font-size:14px;
+}
+
+/* form */
+.controls{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  align-items:center;
+  margin-top:18px;
+  flex-wrap:wrap;
+}
+
+/* ====== IMPORTANT: textarea style kept to match original look,
+   but min-height set small so it looks like 1-line when empty ====== */
+#inputText{
+  width:70%;
+  min-width:260px;
+  max-width:720px;
+  min-height:42px;             /* <-- 1 dòng khi trống */
+  max-height:400px;            /* giới hạn mở rộng */
+  padding:14px 16px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  color:white;
+  font-size:16px;
+  resize:none;                 /* người dùng không kéo */
+  overflow-y:hidden;           /* ẩn scrollbar, JS sẽ mở rộng */
+  outline:none;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.55), inset 0 -6px 12px rgba(255,255,255,0.01);
+}
+#inputText:focus{ box-shadow: 0 10px 30px rgba(0,0,0,0.6); border-color:var(--accent); }
+
+.btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px 18px;
+  border-radius:12px;
+  background: linear-gradient(180deg, var(--accent), #8d2aff);
+  color:white;
+  font-weight:600;
+  text-decoration:none;
+  cursor:pointer;
+  border:1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 10px 18px rgba(109, 33, 161, 0.24);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s;
+}
+.btn:hover{ transform: translateY(-4px); box-shadow: 0 18px 30px rgba(109, 33, 161, 0.34); filter:brightness(1.03); }
+.btn:active{ transform: translateY(-1px); }
+
+/* result area */
+.result-wrap{
+  margin-top:28px;
+  display:flex;
+  gap:20px;
+  align-items:flex-start;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+/* player column */
+.player-col{
+  width:680px;
+  max-width:100%;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  align-items:center;
+}
+
+/* card for player (glass) */
+.player-card{
+  width:100%;
+  background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(10,6,12,0.6));
+  border-radius:14px;
+  padding:16px;
+  position:relative;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+  overflow:visible;
+}
+
+/* video wrapper + smoke aura */
+.video-card{
+  position:relative;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  border-radius:12px;
+  padding:8px;
+  transition: transform .22s cubic-bezier(.2,.9,.2,1), box-shadow .22s;
+  transform-origin:center center;
+}
+
+/* smoky aura using pseudo-element behind */
+.video-card::before{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border-radius:12px;
+  background: radial-gradient(ellipse at 50% 35%, rgba(0,0,0,0.75), rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.95) 70%);
+  filter: blur(20px) saturate(0.6);
+  z-index:0;
+  transition: filter .22s, transform .22s, opacity .22s;
+  opacity:0.95;
+}
+
+/* actual video sits above aura */
+.player-card video{
+  width:100%;
+  max-width:100%;
+  border-radius:8px;
+  display:block;
+  position:relative;
+  z-index:2;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+  transition: transform .22s, box-shadow .22s, filter .22s;
+  transform-origin:center center;
+}
+
+/* thumbnail row (small cards) */
+.thumb-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.thumb{
+  width:120px;
+  height:70px;
+  border-radius:8px;
+  overflow:hidden;
+  position:relative;
+  background:var(--pill-bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition: transform .18s ease, box-shadow .18s ease;
+  border:1px solid rgba(255,255,255,0.04);
+}
+.thumb video{ width:100%; height:100%; object-fit:cover; display:block; filter:brightness(.7) saturate(.9); }
+.thumb:hover{ transform:scale(1.10); box-shadow: 0 14px 36px rgba(0,0,0,0.6); z-index:4; }
+
+/* scale & glow on hover for big card */
+.video-card:hover{ transform: scale(1.02); }
+.video-card:hover::before{ filter: blur(30px) saturate(1.1); transform: scale(1.05); opacity:1; }
+.video-card:hover video{ transform: scale(1.03); filter:brightness(1.02); box-shadow: 0 20px 50px rgba(135,43,217,0.28); }
+
+/* playlist pills */
+#playlist{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+.pill{ padding:8px 10px; border-radius:999px; background:var(--pill-bg); color:#fff; font-size:13px; border:1px solid rgba(255,255,255,0.04); }
+
+#missing{ color:#ff9b9b; margin-top:10px; text-align:center; }
+
+#footerNote { margin-top:8px; font-size:12px; color:rgba(255,255,255,0.6); }
+
+/* hide thumbnail row by default (you can remove this to see thumbnails) */
+.thumb-row { display: none !important; }
+
+ /* footer small */
+.footer{
+  text-align:center;
+  margin-top:26px;
+  color:rgba(255,255,255,0.6);
+  font-size:13px;
+}
+
+/* Responsive tweaks */
+@media (max-width:880px){
+  .controls textarea{ width:100% }
+  .player-col{ width:100%; padding:0 12px; }
+  .title{ font-size:36px; }
+}
+.page-frame {
+  position: fixed;
+  inset: 0;
+  border-radius: 28px;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow:
+      0 0 90px rgba(255, 255, 255, 0.22),
+      0 0 160px rgba(255, 120, 255, 0.18) inset;
+}
+
+
+</style>
+
+</head>
+<body>
+<link rel="stylesheet" href="logo.css">
+<script src="logo-inject.js" defer></script>
+
+<div class="page-frame"></div>
+
+<div class="container">
+  <div class="header">
+    <div class="title">
+      <span style='font-size:100px;'>&#9813;</span>
+    </div>
+    <div class="subtitle">Type an English sentence and see the sign sequence</div>
+  </div>
+
+  <div class="controls">
+    <textarea id="inputText" placeholder="Type sentence (e.g. I love you)"></textarea>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button id="translateBtn" class="btn">Dịch</button>
+      <button id="clearBtn" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.06);">Clear</button>
+    </div>
+  </div>
+
+  <div class="result-wrap">
+    <div class="player-col">
+      <div class="player-card">
+        <div class="video-card" id="videoCard">
+ 
+  <!-- main player gets inserted here by JS -->
+</div>
+
+
+        <div id="playlist" style="display:flex;justify-content:center;gap:8px;margin-top:12px;"></div>
+
+        <div id="missing" aria-live="polite"></div>
+      </div>
+
+      <div class="thumb-row" id="thumbRow" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <div class="footer">&#127762;</div>
+</div>
+
+<script>
+/* ===================== Logic (lexer + sequential player) ===================== */
+
+/* original dictionary / phraseDict (kept as you had them; code below merges and uses them correctly) */
+const dictionary = {
+  "i": ["i.mp4"],
+  "you": ["you.mp4"],
+  "love": ["love.mp4"],
+  "know": ["know.mp4"],
+  "understand": ["understand.mp4"],
+  "what": ["what.mp4"],
+  "hello": ["hello.mp4"],
+  "deaf": ["deaf.mp4"],
+  "mother": ["mother.mp4"],
+  "father": ["father.mp4"],
+  "baby": ["baby.mp4"],
+  "friend": ["friend.mp4"],
+  "school": ["school.mp4"],
+  "yes": ["yes.mp4"],
+  "no": ["no.mp4"],
+  "please": ["please.mp4"],
+  "thank you": ["thank you.mp4"],
+  "rainbow": ["rainbow.mp4"]
+};
+const phraseDict = {
+  "i love you": ["i love you.mp4"],
+  "i know": ["i.mp4", "know.mp4"],
+  "you understand": ["you.mp4", "understand.mp4"]
+};
+
+
+/* normalize function */
+function normalizeText(str){
+  if(!str) return "";
+  let s = str.toLowerCase().trim();
+  s = s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  s = s.replace(/[^a-z0-9\s]/g, '');
+  s = s.replace(/\s+/g,' ').trim();
+  return s;
+}
+
+/* build normalized dictionary map and max phrase length
+   -> Merge both dictionary and phraseDict into normalizedDict, ensuring each key maps to an ARRAY of filenames.
+*/
+const normalizedDict = {};
+let maxPhraseLen = 1;
+
+// helper to add mapping (key string -> array of filenames)
+function addToNormalizedMap(key, filesArray){
+  const nk = normalizeText(key);
+  if(!nk) return;
+  // ensure we store an array of basenames (no duplicates)
+  if(!Array.isArray(filesArray)) filesArray = [filesArray];
+  const existing = normalizedDict[nk] || [];
+  // concat unique
+  filesArray.forEach(f=>{
+    if(!existing.includes(f)) existing.push(f);
+  });
+  normalizedDict[nk] = existing;
+  const l = nk.split(' ').length;
+  if(l > maxPhraseLen) maxPhraseLen = l;
+}
+
+// add entries from dictionary
+Object.keys(dictionary).forEach(k => addToNormalizedMap(k, dictionary[k]));
+// add entries from phraseDict
+Object.keys(phraseDict).forEach(k => addToNormalizedMap(k, phraseDict[k]));
+
+/* greedy match tokens -> file list
+   IMPORTANT: When a phrase matches, push each filename separately (not the array itself).
+*/
+function buildFileListFromText(raw){
+  const norm = normalizeText(raw);
+  if(!norm) return {files:[], missing:[]};
+  const tokens = norm.split(' ');
+  const files = [];
+  const missing = [];
+
+  for(let i=0;i<tokens.length;i++){
+    let matched=false;
+    for(let len=Math.min(maxPhraseLen, tokens.length - i); len>=1; len--){
+      const phrase = tokens.slice(i, i+len).join(' ');
+      if(normalizedDict[phrase]){
+        // normalizedDict[phrase] is an array of filenames (e.g. ["i.mp4","i2.mp4"])
+        normalizedDict[phrase].forEach(filename => {
+          files.push("videos/" + filename);
+        });
+        i += (len-1);
+        matched=true;
+        break;
+      }
+    }
+    if(!matched){
+      missing.push(tokens[i]);
+    }
+  }
+  return {files, missing};
+}
+
+/* preload small (no change) */
+function preload(files){
+  files.forEach(f=>{
+    const v = document.createElement('video');
+    v.preload = 'auto'; v.src = f;
+  });
+}
+
+/* play sequence on one player; also build thumb row and playlist pills (no change except safe handling of inputs) */
+function playSequence(files){
+  const videoCard = document.getElementById('videoCard');
+  const playlistEl = document.getElementById('playlist');
+  const thumbRow = document.getElementById('thumbRow');
+  videoCard.innerHTML = '';
+  playlistEl.innerHTML = '';
+  thumbRow.innerHTML = '';
+
+  if(!files || files.length === 0) return;
+
+  // create main player
+  const player = document.createElement('video');
+  player.controls = true;
+  player.muted = true;
+  player.playsInline = true;
+  player.width = 640;
+  player.style.borderRadius = '8px';
+  player.style.background = '#000';
+  videoCard.appendChild(player);
+
+  // create pills & thumbs
+  files.forEach((f, idx)=>{
+    const pill = document.createElement('div');
+    pill.className = 'pill';
+    pill.textContent = (f.split('/').pop() || f).replace('.mp4','');
+    pill.addEventListener('click', ()=> {
+      currentIndex = idx;
+      tryPlay(currentIndex);
+    });
+    playlistEl.appendChild(pill);
+
+    // thumbnail small video (we create but CSS hides .thumb-row by default)
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    const tvid = document.createElement('video');
+    tvid.muted = true;
+    tvid.src = f;
+    tvid.preload = 'metadata';
+    tvid.playsInline = true;
+    tvid.style.objectFit = 'cover';
+    thumb.appendChild(tvid);
+    thumb.addEventListener('click', ()=> {
+      currentIndex = idx;
+      tryPlay(currentIndex);
+    });
+    thumbRow.appendChild(thumb);
+  });
+
+  preload(files);
+
+  // playback control
+  let currentIndex = 0;
+  function tryPlay(i){
+    if(i >= files.length) return;
+    const src = files[i];
+    player.src = src;
+    // visually highlight current pill
+    [...playlistEl.children].forEach((p, pi)=> {
+      p.style.opacity = (pi===i? '1':'0.55');
+      p.style.transform = (pi===i? 'translateY(-4px) scale(1.02)':'none');
+    });
+    // play and handle promise
+    const promise = player.play();
+    if(promise !== undefined){
+      promise.catch(err => {
+        // autoplay blocked — rely on user click; show a subtle instruction
+        console.warn('Autoplay blocked; user must interact to start playback.', err);
+      });
+    }
+  }
+
+  player.onended = function(){
+    currentIndex++;
+    if(currentIndex < files.length) tryPlay(currentIndex);
+  };
+
+  player.onerror = function(e){
+    console.warn('Error playing file, skipping to next', e);
+    currentIndex++;
+    if(currentIndex < files.length) tryPlay(currentIndex);
+  };
+
+  // start playback
+  tryPlay(0);
+}
+
+/* ---------- Buttons and interactions ---------- */
+const translateBtn = document.getElementById('translateBtn');
+const clearBtn = document.getElementById('clearBtn');
+const inputEl = document.getElementById('inputText');
+
+/* ========== ADDED: group UI + render logic ========== */
+
+/* 1) tạo containers cho 2 mục (nếu chưa có) */
+(function createGroupContainers(){
+  // parent container (nếu bạn có 1 container cụ thể thì có thể chèn vào đó)
+  const container = document.createElement('div');
+  container.id = 'groupResults';
+  container.style.marginTop = '12px';
+  container.style.display = 'flex';
+  container.style.gap = '14px';
+  container.style.flexWrap = 'wrap';
+  container.style.alignItems = 'flex-start';
+
+  // singles box
+  const singlesBox = document.createElement('div');
+  singlesBox.id = 'singlesBox';
+  singlesBox.style.minWidth = '300px';
+  singlesBox.style.flex = '1 1 320px';
+  singlesBox.style.padding = '12px';
+  singlesBox.style.border = '1px solid rgba(0,0,0,0.06)';
+  singlesBox.style.borderRadius = '10px';
+  singlesBox.innerHTML = `<h3 style="margin:0 0 8px 0;font-size:15px">A. Single words</h3>
+                          <div id="singlesList" style="display:flex;flex-direction:column;gap:8px"></div>
+                          <div style="margin-top:10px"><button id="playSinglesBtn" style="padding:6px 10px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer">Play all singles</button></div>`;
+
+  // phrase box
+  const phraseBox = document.createElement('div');
+  phraseBox.id = 'phraseBox';
+  phraseBox.style.minWidth = '260px';
+  phraseBox.style.flex = '0 1 300px';
+  phraseBox.style.padding = '12px';
+  phraseBox.style.border = '1px solid rgba(0,0,0,0.06)';
+  phraseBox.style.borderRadius = '10px';
+  phraseBox.innerHTML = `<h3 style="margin:0 0 8px 0;font-size:15px">B. Phrase</h3>
+                         <div id="phraseContent" style="min-height:48px"></div>`;
+
+  container.appendChild(singlesBox);
+  container.appendChild(phraseBox);
+
+  // insert container above videoCard if exists, otherwise append to body under input
+  const videoCard = document.getElementById('videoCard');
+  if(videoCard && videoCard.parentNode){
+    videoCard.parentNode.insertBefore(container, videoCard);
+  } else {
+    // fallback: insert after inputEl
+    inputEl.parentNode.insertBefore(container, inputEl.nextSibling);
+  }
+})();
+
+/* 2) hàm render groups */
+function renderGroups(text){
+  const norm = normalizeText(text || '');
+  const singlesListEl = document.getElementById('singlesList');
+  const phraseContentEl = document.getElementById('phraseContent');
+  const playSinglesBtn = document.getElementById('playSinglesBtn');
+
+  singlesListEl.innerHTML = '';
+  phraseContentEl.innerHTML = '';
+
+  if(!norm){
+    singlesListEl.innerHTML = `<div style="color:#666">Nhập từ để xem gợi ý...</div>`;
+    phraseContentEl.innerHTML = `<div style="color:#666">Nhập cụm để kiểm tra phrase...</div>`;
+    return;
+  }
+
+  const tokens = norm.split(/\s+/).filter(Boolean);
+
+  // 2A) Prepare singles: for each token, find mapping in normalizedDict (which stores arrays)
+  const singleEntries = tokens.map(tok => {
+    const filesArr = normalizedDict[tok] || null; // array of basenames (or null)
+    const fullPaths = filesArr ? filesArr.map(f => 'videos/' + f) : null;
+    return { token: tok, files: fullPaths };
+  });
+
+  // render singles
+  singleEntries.forEach((entry, idx) => {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.gap = '10px';
+
+    const label = document.createElement('div');
+    label.textContent = entry.token;
+    label.style.fontWeight = '600';
+    label.style.minWidth = '70px';
+
+    const status = document.createElement('div');
+    status.style.flex = '1';
+
+    if(entry.files && entry.files.length){
+      // show small play button and filename(s)
+      const filenamesText = entry.files.map(p=> (p.split('/').pop()||'').replace('.mp4','')).join(', ');
+      status.innerHTML = `<div style="display:flex;gap:8px;align-items:center">
+                            <button class="playSingleBtn" data-srcs='${JSON.stringify(entry.files)}' style="padding:6px 8px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer">Play</button>
+                            <span style="color:#444">${filenamesText}</span>
+                          </div>`;
+    } else {
+      status.innerHTML = `<div style="color:#b00;font-weight:600">Coming soon...</div>`;
+    }
+
+    row.appendChild(label);
+    row.appendChild(status);
+    singlesListEl.appendChild(row);
+  });
+
+  // wire playSingleBtn clicks (delegation)
+  singlesListEl.querySelectorAll('.playSingleBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const srcs = JSON.parse(btn.getAttribute('data-srcs') || '[]');
+      // play single immediately using playSequence (as array)
+      playSequence(srcs);
+    });
+  });
+
+  // prepare list of available single files for "Play all" (flatten)
+  const availableSingleFiles = singleEntries.filter(s=>s.files).flatMap(s=>s.files);
+
+  if(availableSingleFiles.length === 0){
+    playSinglesBtn.disabled = true;
+    playSinglesBtn.style.opacity = '0.6';
+    playSinglesBtn.onclick = null;
+  } else {
+    playSinglesBtn.disabled = false;
+    playSinglesBtn.style.opacity = '1';
+    playSinglesBtn.onclick = ()=> playSequence(availableSingleFiles);
+  }
+
+  // 2B) Phrase check: exact phrase mapping (use normalizedDict)
+  const phraseFilesArr = normalizedDict[norm] || null; // basenames array or null
+  if(phraseFilesArr && phraseFilesArr.length){
+    const phraseFilePaths = phraseFilesArr.map(f=>'videos/'+f);
+    const displayNames = phraseFilesArr.map(f=>f.replace('.mp4','')).join(', ');
+    // show phrase info + play button
+    phraseContentEl.innerHTML = `<div style="display:flex;gap:10px;align-items:center">
+                                    <div style="font-weight:700">${norm}</div>
+                                    <div style="color:#444">${displayNames}</div>
+                                    <button id="playPhraseBtn" style="padding:6px 8px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer">Play Phrase</button>
+                                 </div>`;
+    document.getElementById('playPhraseBtn').addEventListener('click', ()=> playSequence(phraseFilePaths));
+  } else {
+    // no phrase file
+    phraseContentEl.innerHTML = `<div style="color:#b00;font-weight:600">Coming soon...</div>
+                                 <div style="margin-top:8px">
+                                   <button id="playPhraseFallback" style="padding:6px 8px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer">Play words instead</button>
+                                 </div>`;
+    document.getElementById('playPhraseFallback').addEventListener('click', ()=>{
+      // play the single words that exist
+      if(availableSingleFiles.length) playSequence(availableSingleFiles);
+      else alert('Không có video cho các từ đơn để phát.');
+    });
+  }
+}
+
+/* 3) Thay thế handler cho translateBtn: giữ việc show missing như trước nhưng thêm renderGroups */
+translateBtn.addEventListener('click', ()=>{
+  const text = inputEl.value || '';
+  const {files, missing} = buildFileListFromText(text);
+
+  // show missing (giữ nguyên cách hiển thị cũ)
+  if(missing.length){
+    document.getElementById('missing').textContent = 'Không tìm thấy video cho: ' + missing.join(', ');
+  } else {
+    document.getElementById('missing').textContent = '';
+  }
+
+  // render groups (phrase + singles UI)
+  renderGroups(text);
+
+  // nếu có file tổng (files từ buildFileListFromText) — play hoặc giữ như cũ
+  if(files.length){
+    playSequence(files);
+  } else if(!missing.length) {
+    document.getElementById('missing').textContent = 'Vui lòng nhập nội dung.';
+  }
+});
+/* ========== END ADDED ========== */
+
+
+clearBtn.addEventListener('click', ()=>{
+  inputEl.value = '';
+  inputEl.style.height = '';
+  document.getElementById('videoCard').innerHTML = '';
+  document.getElementById('playlist').innerHTML = '';
+  document.getElementById('thumbRow').innerHTML = '';
+  document.getElementById('missing').textContent = '';
+});
+
+/* Auto-expand textarea: keep it small when empty, expand as user types */
+inputEl.addEventListener("input", function () {
+    this.style.height = "auto";            // reset to compute scrollHeight correctly
+    this.style.height = (this.scrollHeight) + "px";
+});
+/* ===================== ADDED: LIVE SUGGESTIONS ===================== */
+
+/* tạo khung gợi ý */
+const suggestionBox = document.createElement("div");
+suggestionBox.id = "suggestionBox";
+suggestionBox.style.position = "absolute";
+suggestionBox.style.background = "#fff";
+suggestionBox.style.border = "1px solid #ddd";
+suggestionBox.style.borderRadius = "8px";
+suggestionBox.style.boxShadow = "0 4px 14px rgba(0,0,0,0.15)";
+suggestionBox.style.padding = "6px 0";
+suggestionBox.style.fontFamily = "Nunito, sans-serif";
+suggestionBox.style.display = "none";
+suggestionBox.style.zIndex = "9999";
+document.body.appendChild(suggestionBox);
+
+/* đặt suggestion ngay dưới input */
+function updateSuggestionPosition() {
+    const rect = inputEl.getBoundingClientRect();
+    suggestionBox.style.left = rect.left + "px";
+    suggestionBox.style.top = (rect.bottom + window.scrollY + 4) + "px";
+    suggestionBox.style.width = rect.width + "px";
+}
+updateSuggestionPosition();
+window.addEventListener("resize", updateSuggestionPosition);
+window.addEventListener("scroll", updateSuggestionPosition);
+
+/* tạo gợi ý khi đang gõ */
+function generateSuggestions(text){
+    const norm = normalizeText(text);
+    if(!norm){
+        suggestionBox.style.display = "none";
+        return;
+    }
+
+    const currentWord = norm.split(" ").pop(); // từ cuối
+    const suggestions = [];
+
+    // match theo từ (bắt đầu bằng…)
+    Object.keys(normalizedDict).forEach(k => {
+        const nk = normalizeText(k);
+        if(nk.startsWith(currentWord) && !suggestions.includes(k)){
+            suggestions.push(k);
+        }
+    });
+
+    // nếu không có => tìm chứa
+    if(suggestions.length === 0){
+        Object.keys(normalizedDict).forEach(k => {
+            const nk = normalizeText(k);
+            if(nk.includes(currentWord)){
+                suggestions.push(k);
+            }
+        });
+    }
+
+    // hiển thị gợi ý
+    if(suggestions.length === 0){
+        suggestionBox.style.display = "none";
+        return;
+    }
+
+    suggestionBox.innerHTML = "";
+    suggestions.slice(0, 10).forEach(word => {
+        const item = document.createElement("div");
+        item.textContent = word;
+        item.style.padding = "8px 12px";
+        item.style.cursor = "pointer";
+        item.style.fontSize = "15px";
+        item.addEventListener("mouseover",()=>{
+            item.style.background="#f0f0f0";
+        });
+        item.addEventListener("mouseout",()=>{
+            item.style.background="";
+        });
+
+        item.addEventListener("click", ()=>{
+            let parts = inputEl.value.trim().split(/\s+/);
+            parts.pop();
+            parts.push(word);
+            inputEl.value = parts.join(" ");
+            suggestionBox.style.display="none";
+            inputEl.focus();
+        });
+
+        suggestionBox.appendChild(item);
+    });
+
+    updateSuggestionPosition();
+    suggestionBox.style.display = "block";
+}
+
+/* trigger khi gõ */
+inputEl.addEventListener("input",()=>{
+    generateSuggestions(inputEl.value);
+});
+inputEl.addEventListener("blur",()=>{
+    setTimeout(()=> suggestionBox.style.display = "none", 200);
+});
+inputEl.addEventListener("focus",()=>{
+    generateSuggestions(inputEl.value);
+});
+
+/* ===================== END SUGGESTIONS ===================== */
+
+</script>
+
+</body>
+</html>

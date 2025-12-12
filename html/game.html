@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mini Game Playground</title>
+<style>
+body{
+    background:linear-gradient(140deg,#fff,#cdeaff,#ffd6f9);
+    padding:60px;
+    font-family:Arial;
+}
+h1{ font-size:40px; }
+
+/* Remove border from forms */
+form, input, button{
+    border:none;
+    outline:none;
+}
+
+/* Game container */
+.game-box{
+    margin-top:30px;
+    background:white;
+    padding:20px;
+    width:350px;
+    border-radius:20px;
+    box-shadow:0 0 15px #0003;
+}
+button{
+    padding:10px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    margin-top:10px;
+}
+/* Snake Canvas */
+#snakeCanvas{
+    background:#000;
+    display:block;
+    margin:auto;
+    border-radius:10px;
+}
+</style>
+</head>
+<body>
+<h1>Mini Game Playground</h1>
+<p>Chọn một game để chơi:</p>
+
+<!-- Game buttons -->
+<button onclick="showGame('guess')">🎯 Đoán số</button>
+<button onclick="showGame('clicker')">⚡ Click Nhanh</button>
+<button onclick="showGame('tictactoe')">❌⭕ Tic Tac Toe</button>
+<button onclick="showGame('snake')">🐍 Snake</button>
+
+<!-- Game display area -->
+<div id="gameArea" class="game-box"></div>
+
+<script>
+function showGame(game){
+    if(game === 'guess') loadGuessGame();
+    if(game === 'clicker') loadClickerGame();
+    if(game === 'tictactoe') loadTicTacToe();
+    if(game === 'snake') loadSnakeGame();
+}
+
+/* 1. Guess number game */
+function loadGuessGame(){
+    document.getElementById('gameArea').innerHTML = `
+        <h3>🎯 Game: Đoán số 1 - 10</h3>
+        <input id="gNum" type="number" placeholder="Nhập số">
+        <button onclick="checkGuess()">Kiểm tra</button>
+        <p id="gResult"></p>
+    `;
+    window.secret = Math.floor(Math.random() * 10) + 1;
+}
+function checkGuess(){
+    let val = document.getElementById('gNum').value;
+    let res = document.getElementById('gResult');
+    if(val == window.secret) res.innerHTML = "🎉 Chính xác!";
+    else res.innerHTML = "Sai rồi, thử lại!";
+}
+
+/* 2. Click speed game */
+function loadClickerGame(){
+    document.getElementById('gameArea').innerHTML = `
+        <h3>⚡ Game: Click nhanh trong 3 giây</h3>
+        <button id="clickBtn" onclick="countClick()">CLICK!</button>
+        <p id="clickResult">Bấm bắt đầu để chơi</p>
+        <button onclick="startClickGame()">Bắt đầu</button>
+    `;
+    window.clickCount = 0;
+    window.clickActive = false;
+}
+function startClickGame(){
+    window.clickCount = 0;
+    window.clickActive = true;
+    document.getElementById('clickResult').innerHTML = "Đang đếm...";
+    setTimeout(()=>{
+        window.clickActive = false;
+        document.getElementById('clickResult').innerHTML = "Bạn đã click: " + window.clickCount;
+    },3000);
+}
+function countClick(){ if(window.clickActive) window.clickCount++; }
+
+/* 3. Tic Tac Toe */
+function loadTicTacToe(){
+    document.getElementById('gameArea').innerHTML = `
+        <h3>❌⭕ Tic Tac Toe</h3>
+        <div id="board" style="display:grid;grid-template-columns:repeat(3,80px);gap:5px;"></div>
+        <p id="tttResult"></p>
+    `;
+    window.ttt = Array(9).fill('');
+    window.turn = 'X';
+    let board = document.getElementById('board');
+
+    for(let i=0;i<9;i++){
+        let cell = document.createElement('button');
+        cell.style.height = "80px";
+        cell.style.fontSize = "30px";
+        cell.onclick = ()=>tttPlay(i);
+        board.appendChild(cell);
+    }
+}
+function tttPlay(i){
+    if(window.ttt[i] !== '') return;
+    window.ttt[i] = window.turn;
+    document.querySelectorAll('#board button')[i].innerHTML = window.turn;
+
+    if(checkWin(window.turn)){
+        document.getElementById('tttResult').innerHTML = window.turn + " thắng!";
+        disableTTT();
+        return;
+    }
+
+    window.turn = window.turn === 'X' ? 'O' : 'X';
+}
+function checkWin(p){
+    let w = [ [0,1,2],[3,4,5],[6,7,8], [0,3,6],[1,4,7],[2,5,8], [0,4,8],[2,4,6] ];
+    return w.some(c => c.every(i => window.ttt[i] === p));
+}
+function disableTTT(){
+    document.querySelectorAll('#board button').forEach(b=>b.disabled=true);
+}
+
+/* 4. Snake Game */
+function loadSnakeGame(){
+    document.getElementById("gameArea").innerHTML = `
+        <h3>🐍 Game: Snake</h3>
+        <canvas id="snakeCanvas" width="300" height="300"></canvas>
+        <p id="snakeScore">Điểm: 0</p>
+    `;
+
+    const canvas = document.getElementById("snakeCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let box = 15;
+    let snake = [{x:150, y:150}];
+    let direction = "RIGHT";
+    let score = 0;
+
+    let food = {
+        x: Math.floor(Math.random()*20)*box,
+        y: Math.floor(Math.random()*20)*box
+    };
+
+    document.onkeydown = function(e){
+        if(e.key==="ArrowUp"||e.key==="w") direction="UP";
+        if(e.key==="ArrowDown"||e.key==="s") direction="DOWN";
+        if(e.key==="ArrowLeft"||e.key==="a") direction="LEFT";
+        if(e.key==="ArrowRight"||e.key==="d") direction="RIGHT";
+    };
+
+    function draw(){
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0,0,300,300);
+
+        for(let i=0;i<snake.length;i++){
+            ctx.fillStyle = i===0 ? "lime" : "white";
+            ctx.fillRect(snake[i].x, snake[i].y, box, box);
+        }
+
+        ctx.fillStyle = "red";
+        ctx.fillRect(food.x, food.y, box, box);
+
+        let head = {...snake[0]};
+
+        if(direction==="UP") head.y -= box;
+        if(direction==="DOWN") head.y += box;
+        if(direction==="LEFT") head.x -= box;
+        if(direction==="RIGHT") head.x += box;
+
+        // xuyên tường
+        if(head.x < 0) head.x = 285;
+        if(head.x > 285) head.x = 0;
+        if(head.y < 0) head.y = 285;
+        if(head.y > 285) head.y = 0;
+
+        // ăn mồi
+        if(head.x === food.x && head.y === food.y){
+            score++;
+            document.getElementById("snakeScore").innerHTML = "Điểm: "+score;
+            food = {
+                x: Math.floor(Math.random()*20)*box,
+                y: Math.floor(Math.random()*20)*box
+            };
+        } else {
+            snake.pop();
+        }
+
+        // tự cắn đuôi
+        for(let i=1;i<snake.length;i++){
+            if(head.x === snake[i].x && head.y === snake[i].y){
+                alert("💀 Thua rồi! Điểm: " + score);
+                clearInterval(game);
+            }
+        }
+
+        snake.unshift(head);
+    }
+
+    let game = setInterval(draw, 120);
+}
+</script>
+
+</body>
+</html>
