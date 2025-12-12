@@ -264,10 +264,63 @@
   text-decoration:none;
   box-shadow:0 8px 26px rgba(100,120,200,0.12);
 }
-
+.site-logo {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    width: 64px;
+    height: 64px;
+    z-index: 9999;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s;
+  }
+  .site-logo:active { transform: scale(.97); }
+  .site-logo svg { width:100%; height:100%; display:block; }
+  .site-logo:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 30px rgba(0,0,0,0.16); }
+  @media (prefers-reduced-motion: reduce) {
+    .site-logo, .site-logo svg { transition: none; transform: none; }
+  }
+  .site-logo img {
+    width: 150%;
+    height: 150%;
+    object-fit: contain; /* không méo ảnh */
+    border-radius: 10px; /* nếu muốn bo nhẹ logo */
+}
 </style>
 </head>
 <body>
+
+<body>
+
+<div class="site-logo" id="siteLogo" role="link" aria-label="Home - Logo" title="Home">
+  <img src="images/logo.png" alt="Logo">
+</div>
+
+<script>
+  (function(){
+    var logo = document.getElementById('siteLogo');
+    if (!logo) return;
+    logo.addEventListener('click', function(){
+      // đổi 'index.html' nếu bạn muốn đường dẫn khác
+      window.location.href = 'index.html';
+    });
+    logo.setAttribute('tabindex', '0');
+    logo.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') { 
+        e.preventDefault(); 
+        logo.click(); 
+      }
+    });
+  })();
+</script>
+
 
 <!-- USER WIDGET / SIGN-IN (do script bật/tắt) -->
 <div id="userWidget" class="user-widget hidden" role="button" tabindex="0" aria-label="Open profile">
@@ -286,7 +339,7 @@
   </div>
 
   <div class="city city-left">
-    <h2>voice</h2>
+    <h2>our voice</h2>
     <p>could be everywhere.</p>
   </div>
 
@@ -297,7 +350,7 @@
 
   <div class="city city-left">
     <h2>dark</h2>
-    <p>too.</p>
+    <p>is, too.</p>
   </div>
 
   <audio id="audio"></audio>
@@ -335,9 +388,24 @@
 <script>
 /* MUSIC RANDOM AUTOPLAY */
 const playlist = [
-  "callofsilence.mp3",
-  "love you.mp3"
+  "music/dolia.mp3",
+  "music/beautiful.mp3",
+  "music/rainbow.mp3",
+  "music/vogelpiano.mp3",
+  "music/counter.mp3",
+  "music/vogel.mp3",
+  "music/callwed.mp3",
+  "music/akumawed.mp3",
+  "music/akazawife.mp3",
+  "music/akaza.mp3",
+  "music/vohanthanh.mp3",
+  "music/kamado.mp3",
+  "music/kny4.mp3",
+  "music/kny2.mp3",
+  "music/kny5.mp3",
+  "music/beauty.mp3"
 ];
+
 
 const audio = document.getElementById("audio");
 let currentIndex = -1;
